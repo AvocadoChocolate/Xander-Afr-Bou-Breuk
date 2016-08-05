@@ -4,17 +4,26 @@ local scene = composer.newScene()
 local group = display.newGroup()
 --5 should fit on the scene, with a margin equivalent of 1 of the vorms
 
+--b.mask={{88,140},{88,372},{43,70},{89,70},{137,69},{43,117},{90,117},{136,118},{43,166},{90,166},{136,166},{269,109},{90,215},{135,214},{42,302},{88,302},{136,302},{42,350},{88,349},{136,350},{42,398},{89,396},{136,396},{90,460}}
+--h.mask={{100,316},{99,215},{101,106},{102,316},{57,213},{143,214},{158,96}}
+--l.mask={{323,253},{323,569},{330,889},{468,1117},{200,1115},{330,575},{426,581},{228,579},{431,897},{330,895},{228,897},{268,251},{387,257},{330,55},{596,253},{41,253}}
+--rock.mask={{542,622},{549,420},{542,1104},{446,877},{463,869},{549,204},{839,913},{231,915},{547,517}}
+--s.mask={{186,150},{640,158},{194,404},{636,405},{414,475},{643,249},{198,250},{791,57},{644,58},{496,55},{355,56},{206,57},{417,540},{50,57},{399,460},{441,463}}
+--t.mask={{244,616},{426,617},{616,608},{807,610},{657,616},{783,160},{910,159},{288,80},{98,577}}
+
+local background
+local isTransition = false
 local shapeHeight = display.contentHeight/6
 local xInset = display.contentWidth/20
 local yInset = display.contentHeight/20
 local margin = shapeHeight/6
-
+local backgroundMusicMenu = audio.loadStream( "music.mp3" )
 local sceneGroup
 local drag
-
+local curShape
 local addme = {}
 local remme = {}
-
+local listeners ={}
 local sheetInfo = require("animations")
 		local myImageSheet = graphics.newImageSheet( "animations.png", sheetInfo:getSheet() )
 		local cursprite
@@ -25,46 +34,53 @@ local shapes = {"f1.png","f2.png","f3.png",
 
 local questions = {"flower_lines.png","house_lines.png","rocket_lines.png","castle_lines.png"}
 function toggleMusic()
-		if (isPlaying) then
+		if (isPlayingBS) then
 		audio.pause(backgroundMusicChannel)
-		isPlaying = false
+		isPlayingBS = false
 		music:toFront()
 		else
 		 backgroundMusicMenu = audio.loadStream( "music.mp3" )
-		audio.play( backgroundMusicMenu, { loops=1, fadein=3000 } )
-		isPlaying = true
+		 local backgroundMusicChannelMenu = audio.play( backgroundMusicMenu, { loops=1, fadein=3000,onComplete = function() isPlayingBS = false 
+		music:toFront()
+		end } )
+		--audio.play( backgroundMusicMenu, { loops=1, fadein=3000 } )
+		isPlayingBS = true
 		musicO:toFront()
 		end
 		return true
 end
-local n = {1,2,3,4}
+local n = {1,2,3,4,5,6,7}
 local answ = 0
 local amount = 0
-
+local scaleS
 local numb = n[voltooivormbouvar]
 
 local collide = {}
 local mask={}
+local whites = {}
 
 local function removeCorrect()
 	for i=1,#remme do
-		transition.to(remme[i],{alpha = 0})
+		isTransition = true
+		transition.to(remme[i],{alpha = 0,onComplete = function() isTransition = false end})
 	end
 
 	for i=1,#addme do
-		transition.to(addme[i],{alpha = 1})
+		isTransition = true
+		transition.to(addme[i],{alpha = 1,onComplete = function() isTransition = false end})
 	end
 
 	if answ == amount then
 		voltooivormbouvar = voltooivormbouvar + 1
 
 		if voltooivormbouvar <= #n then
-		audio:pause(backgroundMusicChannelMenu)
+		--audio:pause(backgroundMusicChannelMenu)
 		 timer.performWithDelay( 1000, (function(e) composer.removeScene("bouself")
+		 
 			composer.gotoScene( "bouself" , "fade", 500) end) )
 			else
 			audio:pause(backgroundMusicChannelMenu)
-		composer.removeScene("scene1")
+		composer.removeScene("bouself")
 			composer.gotoScene( "scene1" , "fade", 500) 
 		voltooivormbouvar = 1
 		end
@@ -73,35 +89,39 @@ end
 
 local function removeWrong(obj)
 	for i=1,#remme do
-	transition.to(remme[i],{alpha = 0})
+	isTransition = true
+	transition.to(remme[i],{alpha = 0,onComplete = function() isTransition = false end})
 	end
 
 	for i=1,#addme do
-	transition.to(addme[i],{alpha = 1})
+	isTransition = true
+	transition.to(addme[i],{alpha = 1,onComplete = function() isTransition = false end})
 	end
 
 	if answ == amount then
-	voltooivormvar = voltooivormvar + 1
+	voltooivormbouvar = voltooivormbouvar + 1
 
-	if voltooivormvar <= #n then
-	audio:pause(backgroundMusicChannelMenu)
-		timer.performWithDelay( 1000, (function(e) composer.removeScene("voltooivorm")
-			composer.gotoScene( "voltooivorm" , "fade", 500) end) )
+	if voltooivormbouvar <= #n then
+	--audio:pause(backgroundMusicChannelMenu)
+		timer.performWithDelay( 1000, (function(e) composer.removeScene("bouself")
+			composer.gotoScene( "bouself" , "fade", 500) end) )
 			else
 			audio:pause(backgroundMusicChannelMenu)
-		composer.removeScene("scene1")
+		composer.removeScene("bouself")
 			composer.gotoScene( "scene1" , "fade", 500) 
-		voltooivormvar = 1
+		voltooivormbouvar = 1
 		end
 	end
-	
-	transition.to(cursprite.orig,{x = cursprite.orig.origx,y = cursprite.orig.origy, xScale = 0.25, yScale = 0.25})
+	isTransition = true
+	transition.to(cursprite.orig,{x = cursprite.orig.origx,y = cursprite.orig.origy, xScale = cursprite.orig.origScaleF, yScale = cursprite.orig.origScaleF,onComplete = function() isTransition = false end})
 end
 
 local function showCorrect(obj)
-	cursprite = display.newSprite( myImageSheet , {frames={1,2,3,4,5,6,7},loopDirection = "bounce", time = 600, loopCount = 1} )
-		
-	curspritescale = (obj.contentWidth-10)/cursprite.contentWidth/2
+	
+	--isTransition = true
+	cursprite = display.newSprite( myImageSheet , {frames={1,2,3,4,5,6,7},loopDirection = "bounce", time = 300, loopCount = 1,onComplete=function() display.getCurrentStage():setFocus( nil ) end} )
+	display.getCurrentStage():setFocus( cursprite )	
+	--curspritescale = (obj.contentWidth-10)/cursprite.contentWidth/2
 	cursprite:scale(curspritescale,curspritescale)
 	cursprite.x = obj.x
 	cursprite.y = obj.y
@@ -111,21 +131,24 @@ local function showCorrect(obj)
 	remme[#remme+1] = cursprite
 	
 	local d = display.newImage("Correct_Done.png")
-d.alpha = 0
-d:scale(curspritescale,curspritescale)
-d.x = cursprite.x
-d.y = cursprite.y
-sceneGroup:insert(d)
-addme[#addme+1] = d
+	d.alpha = 0
+	d:scale(curspritescale,curspritescale)
+	d.x = cursprite.x
+	d.y = cursprite.y
+	sceneGroup:insert(d)
+	addme[#addme+1] = d
 	
-	timer.performWithDelay( 600, removeCorrect)
+	timer.performWithDelay( 300, removeCorrect)
 	
 	answ = answ + 1
+	
 end
 
 local function showWrong(obj)
-	cursprite = display.newSprite( myImageSheet , {frames={8,9,10,11,12,13,14},loopDirection = "bounce", time = 600, loopCount = 1} )
-		
+	--isTransition = true
+	
+	cursprite = display.newSprite( myImageSheet , {frames={8,9,10,11,12,13,14},loopDirection = "bounce", time = 300, loopCount = 1,onComplete=function() display.getCurrentStage():setFocus( nil ) end} )
+	display.getCurrentStage():setFocus( cursprite )
 	curspritescale = (obj.contentWidth-10)/cursprite.contentWidth/2
 	cursprite:scale(curspritescale,curspritescale)
 	cursprite.x = obj.x
@@ -136,886 +159,293 @@ local function showWrong(obj)
 	cursprite:play()
 	
 	remme[#remme+1] = cursprite
-	timer.performWithDelay( 600, removeWrong)
-end
-
-local function hasCollided( obj1, obj2 )
-    if ( obj1 == nil ) then  -- Make sure the first object exists
-        return false
-    end
-    if ( obj2 == nil ) then  -- Make sure the other object exists
-        return false
-    end
-
-    local left = obj1.contentBounds.xMin <= obj2.contentBounds.xMin and obj1.contentBounds.xMax >= obj2.contentBounds.xMin
-    local right = obj1.contentBounds.xMin >= obj2.contentBounds.xMin and obj1.contentBounds.xMin <= obj2.contentBounds.xMax
-    local up = obj1.contentBounds.yMin <= obj2.contentBounds.yMin and obj1.contentBounds.yMax >= obj2.contentBounds.yMin
-    local down = obj1.contentBounds.yMin >= obj2.contentBounds.yMin and obj1.contentBounds.yMin <= obj2.contentBounds.yMax
-
-    return (left or right) and (up or down)
+	removeWrong()
+	--timer.performWithDelay( 300, removeWrong)
+	
 end
 
 function AddShapes()
 	if numb == 1 then
-		local l = display.newImage(questions[1])
-		l:scale(0.25,0.25)
-		l.x = display.actualContentWidth - drag.x -- - drag.contentWidth -  )/2--display.contentWidth/2 - display.actualContentWidth*0.1
-		l.y = display.contentHeight/2
-		l.alpha = 0
-		sceneGroup:insert(l)
-
-		--Stem1
-		local t = display.newImage("f3M.png")
-		t:scale(l.contentWidth/4.6/t.contentWidth,l.contentWidth/4.6/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 294*l.xScale
-		t.y = l.y - t.contentHeight/2 + 31
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
-		--Stem2
-		local t = display.newImage("f3M.png")
-		t:scale(l.contentWidth/4.6/t.contentWidth,l.contentWidth/4.6/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 294*l.xScale
-		t.y = l.y - t.contentHeight/2 + 74
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
-		--Stem3
-		local t = display.newImage("f3M.png")
-		t:scale(l.contentWidth/4.6/t.contentWidth,l.contentWidth/4.6/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 294*l.xScale
-		t.y = l.y - t.contentHeight/2 + 74+43
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
---Petal
-		local t = display.newImage("f5M.png")
-		t:scale(l.contentWidth/2.75/t.contentWidth,l.contentWidth/2.75/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 300*l.xScale
-		t.y = l.y - t.contentHeight/2 - 35
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-	
-	--Bottom left
-		local t = display.newImage("f1M.png")
-		t:scale(l.contentWidth/2.9/t.contentWidth,l.contentWidth/2.9/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 209*l.xScale
-		t.y = l.y - t.contentHeight/2 - 3
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
---Bottom right
-		local t = display.newImage("f1M.png")
-		t:scale(l.contentWidth/2.9/t.contentWidth,l.contentWidth/2.9/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 397*l.xScale
-		t.y = l.y - t.contentHeight/2 - 1
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
---Middel right
-		local t = display.newImage("f1M.png")
-		t:scale(l.contentWidth/2.9/t.contentWidth,l.contentWidth/2.9/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 495*l.xScale
-		t.y = l.y - t.contentHeight/2 - 41
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
-		--Top right
-		local t = display.newImage("f1M.png")
-		t:scale(l.contentWidth/2.9/t.contentWidth,l.contentWidth/2.9/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 396*l.xScale
-		t.y = l.y - t.contentHeight/2 - 82
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
-		--Top left
-		local t = display.newImage("f1M.png")
-		t:scale(l.contentWidth/2.9/t.contentWidth,l.contentWidth/2.9/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 209*l.xScale
-		t.y = l.y - t.contentHeight/2 - 82
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
-		--Middel left
-		local t = display.newImage("f1M.png")
-		t:scale(l.contentWidth/2.9/t.contentWidth,l.contentWidth/2.9/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 105*l.xScale
-		t.y = l.y - t.contentHeight/2 - 43
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
---leaf1
-		local t = display.newImage("f2M.png")
-		t:scale(l.contentWidth/3/t.contentWidth,l.contentWidth/3/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 450*l.xScale
-		t.y = l.y - t.contentHeight/2 + 40
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
-		--leaf2
-		local t = display.newImage("f2M.png")
-		t:scale(l.contentWidth/3/t.contentWidth,l.contentWidth/3/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 131*l.xScale
-		t.y = l.y - t.contentHeight/2 + 51
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
-		--pot1
-		local t = display.newImage("f4M.png")
-		t:scale(l.contentWidth/2.7/t.contentWidth,l.contentWidth/2.7/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 181*l.xScale
-		t.y = l.y - t.contentHeight/2 + 133
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
-		--pot2
-		local t = display.newImage("f4M.png")
-		t:scale(l.contentWidth/2.7/t.contentWidth,l.contentWidth/2.7/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 403*l.xScale
-		t.y = l.y - t.contentHeight/2 + 133
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-		mask[4]:toFront()
---Stem1
-		local t = display.newImage("f3.png")
-		t:scale(l.contentWidth/4.6/t.contentWidth,l.contentWidth/4.6/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 294*l.xScale
-		t.y = l.y - t.contentHeight/2 + 31
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-		--Stem2
-		local t = display.newImage("f3.png")
-		t:scale(l.contentWidth/4.6/t.contentWidth,l.contentWidth/4.6/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 294*l.xScale
-		t.y = l.y - t.contentHeight/2 + 74
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-		--Stem3
-		local t = display.newImage("f3.png")
-		t:scale(l.contentWidth/4.6/t.contentWidth,l.contentWidth/4.6/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 294*l.xScale
-		t.y = l.y - t.contentHeight/2 + 74+43
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
---Petal
-		local t = display.newImage("f5.png")
-		t:scale(l.contentWidth/2.75/t.contentWidth,l.contentWidth/2.75/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 300*l.xScale
-		t.y = l.y - t.contentHeight/2 - 35
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-	
-	--Bottom left
-		local t = display.newImage("f1.png")
-		t:scale(l.contentWidth/2.9/t.contentWidth,l.contentWidth/2.9/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 209*l.xScale
-		t.y = l.y - t.contentHeight/2 - 3
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
---Bottom right
-		local t = display.newImage("f1.png")
-		t:scale(l.contentWidth/2.9/t.contentWidth,l.contentWidth/2.9/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 397*l.xScale
-		t.y = l.y - t.contentHeight/2 - 1
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
---Middel right
-		local t = display.newImage("f1.png")
-		t:scale(l.contentWidth/2.9/t.contentWidth,l.contentWidth/2.9/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 495*l.xScale
-		t.y = l.y - t.contentHeight/2 - 41
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-		--Top right
-		local t = display.newImage("f1.png")
-		t:scale(l.contentWidth/2.9/t.contentWidth,l.contentWidth/2.9/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 396*l.xScale
-		t.y = l.y - t.contentHeight/2 - 82
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-		--Top left
-		local t = display.newImage("f1.png")
-		t:scale(l.contentWidth/2.9/t.contentWidth,l.contentWidth/2.9/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 209*l.xScale
-		t.y = l.y - t.contentHeight/2 - 82
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-		--Middel left
-		local t = display.newImage("f1.png")
-		t:scale(l.contentWidth/2.9/t.contentWidth,l.contentWidth/2.9/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 105*l.xScale
-		t.y = l.y - t.contentHeight/2 - 43
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
---leaf1
-		local t = display.newImage("f2.png")
-		t:scale(l.contentWidth/3/t.contentWidth,l.contentWidth/3/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 450*l.xScale
-		t.y = l.y - t.contentHeight/2 + 40
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-		--leaf2
-		local t = display.newImage("f2.png")
-		t:scale(l.contentWidth/3/t.contentWidth,l.contentWidth/3/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 131*l.xScale
-		t.y = l.y - t.contentHeight/2 + 51
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-		--pot1
-		local t = display.newImage("f4.png")
-		t:scale(l.contentWidth/2.7/t.contentWidth,l.contentWidth/2.7/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 181*l.xScale
-		t.y = l.y - t.contentHeight/2 + 133
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-		--pot2
-		local t = display.newImage("f4.png")
-		t:scale(l.contentWidth/2.7/t.contentWidth,l.contentWidth/2.7/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 403*l.xScale
-		t.y = l.y - t.contentHeight/2 + 133
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
+	local t = display.newImage("flower/f1.png")
+	t.alpha = 0
+	scaleS = (display.contentHeight - xInset)/t.contentHeight
+	t:removeSelf()
+	for i =1,14 do
+			print("flower/f"..i..".png")
+			local t = display.newImage("flower/f"..i..".png")
+			t.anchorX = 0
+			t.anchorY = 0
+			t.x = xInset*4
+			t.y = yInset
+			t:scale(scaleS,scaleS)
+			t.alpha = 0
+			collide[#collide+1] = t
+			sceneGroup:insert(t)
+		end
+		for i =1,14 do
+			local t = display.newImage("flower/f"..i.."M.png")
+			t.anchorX = 0
+			t.anchorY = 0
+			t.x = xInset*4
+			t.y = yInset
+			t:scale(scaleS,scaleS)
+			t.alpha = 1
+			t.pos = i
+			whites[#whites+1] = t
+			sceneGroup:insert(t)
 		
-		--collide[4]:toFront()
+		end
+		mask = {{288,566},{288,714},{288,884},{210,421},{109,263},{396,425},{498,275},{398,105},{211,105},{131,661},{456,621},{301,279},{403,960},{182,959}}
 		amount = 14
 	elseif numb == 2 then
-	local l = display.newImage(questions[2])
-	l:scale(0.4,0.4)
-	l.x = display.contentWidth/2 - display.actualContentWidth*0.1
-	l.y = display.contentHeight/2
-	l.alpha =0;
-	sceneGroup:insert(l)
-	local t = display.newImage("i1M.png")
-		t:scale(l.contentWidth/1/t.contentWidth,l.contentWidth/1/t.contentWidth)
-		t.x = l.x
-		t.y = l.y + 22.5
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
-		local t = display.newImage("i1M.png")
-		t:scale(l.contentWidth/1/t.contentWidth,l.contentWidth/1/t.contentWidth)
-		t.x = l.x
-		t.y = l.y + 22.5+81
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
-		--chimney
-	local t = display.newImage("r3M.png")
-		t:scale(l.contentWidth/4.5/t.contentWidth,l.contentWidth/4.5/t.contentWidth)
-		t.x = l.x + l.contentWidth/2 - 35
-		t.y = l.y - t.contentHeight/2 - 45
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
---Roof
-	local t = display.newImage("h3M.png")
-		t:scale(l.contentWidth/1/t.contentWidth,l.contentWidth/1/t.contentWidth)
-		t.x = l.x -- l.contentWidth/2 + 403*l.xScale
-		t.y = l.y - t.contentHeight/2 -17
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
---door
-	local t = display.newImage("r3M.png")
-		t:scale(l.contentWidth/3.35/t.contentWidth,l.contentWidth/3.35/t.contentWidth)
-		t.x = l.x -- l.contentWidth/2 + 403*l.xScale
-		t.y = l.y - t.contentHeight/2 + 137
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
-		--window1
-	local t = display.newImage("h4M.png")
-		t:scale(l.contentWidth/3.5/t.contentWidth,l.contentWidth/3.5/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 113
-		t.y = l.y - t.contentHeight/2+46
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
-			--window2
-	local t = display.newImage("h4M.png")
-		t:scale(l.contentWidth/3.5/t.contentWidth,l.contentWidth/3.5/t.contentWidth)
-		t.x = l.x + l.contentWidth/2 - 114
-		t.y = l.y - t.contentHeight/2+46
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
-local t = display.newImage("i1.png")
-		t:scale(l.contentWidth/1/t.contentWidth,l.contentWidth/1/t.contentWidth)
-		t.x = l.x
-		t.y = l.y + 22.5
+		local t = display.newImage("house/h1.png")
 		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-		local t = display.newImage("i1.png")
-		t:scale(l.contentWidth/1/t.contentWidth,l.contentWidth/1/t.contentWidth)
-		t.x = l.x
-		t.y = l.y + 22.5+81
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-		--chimney
-	local t = display.newImage("r3.png")
-		t:scale(l.contentWidth/4.5/t.contentWidth,l.contentWidth/4.5/t.contentWidth)
-		t.x = l.x + l.contentWidth/2 - 35
-		t.y = l.y - t.contentHeight/2 - 45
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
---Roof
-	local t = display.newImage("h3.png")
-		t:scale(l.contentWidth/1/t.contentWidth,l.contentWidth/1/t.contentWidth)
-		t.x = l.x -- l.contentWidth/2 + 403*l.xScale
-		t.y = l.y - t.contentHeight/2 -17
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
---door
-	local t = display.newImage("r3.png")
-		t:scale(l.contentWidth/3.35/t.contentWidth,l.contentWidth/3.35/t.contentWidth)
-		t.x = l.x -- l.contentWidth/2 + 403*l.xScale
-		t.y = l.y - t.contentHeight/2 + 137
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-		--window1
-	local t = display.newImage("h4.png")
-		t:scale(l.contentWidth/3.5/t.contentWidth,l.contentWidth/3.5/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 113
-		t.y = l.y - t.contentHeight/2+46
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-			--window2
-	local t = display.newImage("h4.png")
-		t:scale(l.contentWidth/3.5/t.contentWidth,l.contentWidth/3.5/t.contentWidth)
-		t.x = l.x + l.contentWidth/2 - 114
-		t.y = l.y - t.contentHeight/2+46
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
+		scaleS = (display.contentHeight - xInset)/t.contentHeight
+		t:removeSelf()
+		for i =1,7 do
+			
+			local t = display.newImage("house/h"..i..".png")
+			t.anchorX = 0
+			t.anchorY = 0
+			t.x = xInset*4
+			t.y = yInset
+			t:scale(scaleS,scaleS)
+			t.alpha = 0
+			
+			collide[#collide+1] = t
+			sceneGroup:insert(t)
+		end
+		
+		for i =1,7 do
+			local t = display.newImage("house/h"..i.."M.png")
+			t.anchorX = 0
+			t.anchorY = 0
+			t.x = xInset*4
+			t.y = yInset
+			t:scale(scaleS,scaleS)
+			t.alpha = 1
+			t.pos = i
+			whites[#whites+1] = t
+			sceneGroup:insert(t)
+		
+		end
+		mask={{100,316},{99,215},{101,106},{102,316},{57,213},{143,214},{158,96}}
+		amount = 7
 	
-	amount = 7
 	elseif numb == 3 then
-	local l = display.newImage(questions[3])
-	l:scale(0.25,0.25)
-	l.x = display.contentWidth/2 - xInset*3
-	l.y = display.contentHeight/2
-	l.alpha=0
-	sceneGroup:insert(l)
-	
-local t = display.newImage("i1M.png")
-		t:scale(l.contentWidth/2.77/t.contentWidth,l.contentWidth/2.8/t.contentWidth)
-		t.x = l.x
-		t.y = l.y - t.contentHeight*0.9
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
-		local t = display.newImage("i1M.png")
-		t:scale(l.contentWidth/2.77/t.contentWidth,l.contentWidth/2.8/t.contentWidth)
-		t.x = l.x
-		t.y = l.y + 4
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
-		local t = display.newImage("i1M.png")
-		t:scale(l.contentWidth/2.77/t.contentWidth,l.contentWidth/2.8/t.contentWidth)
-		t.x = l.x
-		t.y = l.y + t.contentHeight*2.5
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
---Window
-	local t = display.newImage("r1M.png")
-		t:scale(l.contentWidth/4.5/t.contentWidth,l.contentWidth/4.5/t.contentWidth)
-		t.x = l.x
-		t.y = l.y - t.contentHeight/2+8
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
---Wing1
-		local t = display.newImage("r2M.png")
-		t:scale(l.contentWidth/3.1/t.contentWidth,l.contentWidth/3.05/t.contentWidth)
-		t.x = l.x + l.contentWidth/2.95
-		t.y = l.y + t.contentHeight*0.9
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
-		--Wing2
-		local t = display.newImage("r5M.png")
-		t:scale(l.contentWidth/3.1/t.contentWidth,l.contentWidth/3.05/t.contentWidth)
-		t.x = l.x - l.contentWidth/2.95
-		t.y = l.y + t.contentHeight*0.9
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
-		--base1
-		local t = display.newImage("r3M.png")
-		t:scale(l.contentWidth/5.5/t.contentWidth,l.contentWidth/5.5/t.contentWidth)
-		t.x = l.x + t.contentWidth*0.5
-		t.y = l.y + t.contentHeight/1.1
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
-		--base2
-		local t = display.newImage("r3M.png")
-		t:scale(l.contentWidth/5.5/t.contentWidth,l.contentWidth/5.5/t.contentWidth)
-		t.x = l.x - t.contentWidth*0.5
-		t.y = l.y + t.contentHeight/1.1
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
-		--base2
-		local t = display.newImage("r4M.png")
-		t:scale(l.contentWidth/2.75/t.contentWidth,l.contentWidth/2.75/t.contentWidth)
-		t.x = l.x 
-		t.y = l.y - t.contentHeight*1.375
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-local t = display.newImage("i1.png")
-		t:scale(l.contentWidth/2.77/t.contentWidth,l.contentWidth/2.8/t.contentWidth)
-		t.x = l.x
-		t.y = l.y - t.contentHeight*0.9
+		local t = display.newImage("rocket/r1.png")
 		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-		local t = display.newImage("i1.png")
-		t:scale(l.contentWidth/2.77/t.contentWidth,l.contentWidth/2.8/t.contentWidth)
-		t.x = l.x
-		t.y = l.y + 4
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-		local t = display.newImage("i1.png")
-		t:scale(l.contentWidth/2.77/t.contentWidth,l.contentWidth/2.8/t.contentWidth)
-		t.x = l.x
-		t.y = l.y + t.contentHeight*2.5
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
---Window
-	local t = display.newImage("r1.png")
-		t:scale(l.contentWidth/4.5/t.contentWidth,l.contentWidth/4.5/t.contentWidth)
-		t.x = l.x
-		t.y = l.y - t.contentHeight/2+8
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
---Wing1
-		local t = display.newImage("r2.png")
-		t:scale(l.contentWidth/3.1/t.contentWidth,l.contentWidth/3.05/t.contentWidth)
-		t.x = l.x + l.contentWidth/2.95
-		t.y = l.y + t.contentHeight*0.9
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-		--Wing2
-		local t = display.newImage("r5.png")
-		t:scale(l.contentWidth/3.1/t.contentWidth,l.contentWidth/3.05/t.contentWidth)
-		t.x = l.x - l.contentWidth/2.95
-		t.y = l.y + t.contentHeight*0.9
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-		--base1
-		local t = display.newImage("r3.png")
-		t:scale(l.contentWidth/5.5/t.contentWidth,l.contentWidth/5.5/t.contentWidth)
-		t.x = l.x + t.contentWidth*0.5
-		t.y = l.y + t.contentHeight/1.1
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-		--base2
-		local t = display.newImage("r3.png")
-		t:scale(l.contentWidth/5.5/t.contentWidth,l.contentWidth/5.5/t.contentWidth)
-		t.x = l.x - t.contentWidth*0.5
-		t.y = l.y + t.contentHeight/1.1
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-		--base2
-		local t = display.newImage("r4.png")
-		t:scale(l.contentWidth/2.75/t.contentWidth,l.contentWidth/2.75/t.contentWidth)
-		t.x = l.x 
-		t.y = l.y - t.contentHeight*1.375
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-	
-	
+		scaleS = (display.contentWidth/2 - xInset)/t.contentWidth
+		t:removeSelf()
+		for i =1,9 do
+			local t = display.newImage("rocket/r"..i..".png")
+			t.anchorX = 0
+			t.anchorY = 0
+			t.x = xInset*2
+			t.y = yInset
+			t:scale(scaleS,scaleS)
+			t.alpha = 0
+			
+			collide[#collide+1] = t
+			sceneGroup:insert(t)
+		end
+		
+		for i =1,9 do
+			local t = display.newImage("rocket/r"..i.."M.png")
+			t.anchorX = 0
+			t.anchorY = 0
+			t.x = xInset*2
+			t.y = yInset
+			t:scale(scaleS,scaleS)
+			t.alpha = 1
+			t.pos = i
+			whites[#whites+1] = t
+			sceneGroup:insert(t)
+		
+		end
+		
+		mask={{271,311},{274,210},{271,552},{223,438},{324,428},{274,102},{419,456},{115,457},{273,258}}
 		amount = 9
 	elseif numb == 4 then	
-	local l = display.newImage(questions[4])
-	l:scale(0.35,0.35)
-	l.x = display.contentWidth/2 - xInset*3
-	l.y = display.contentHeight/2
-	l.alpha = 0
-	sceneGroup:insert(l)
-	local t = display.newImage("i1M.png")
-		t:scale(l.contentWidth/2.35/t.contentWidth,l.contentWidth/2.35/t.contentWidth)
-		t.x = l.x - 77.5
-		t.y = l.y - l.contentHeight/2 + 56
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
-		local t = display.newImage("i1M.png")
-		t:scale(l.contentWidth/2.35/t.contentWidth,l.contentWidth/2.35/t.contentWidth)
-		t.x = l.x + 75
-		t.y = l.y - l.contentHeight/2 + 56
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
-	--Wall1
-	local t = display.newImage("r3M.png")
-		t:scale(l.contentWidth/2.9/t.contentWidth,l.contentWidth/2.9/t.contentWidth)
-		t.x = l.x - 80+1
-		t.y = l.y + l.contentHeight/2 - 71
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
-		--Wall2
-	local t = display.newImage("r3M.png")
-		t:scale(l.contentWidth/2.9/t.contentWidth,l.contentWidth/2.9/t.contentWidth)
-		t.x = l.x +75
-		t.y = l.y + l.contentHeight/2 - 71
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
-			--Wall3
-	local t = display.newImage("r3M.png")
-		t:scale(l.contentWidth/5/t.contentWidth,l.contentWidth/5/t.contentWidth)
-		t.x = l.x-2
-		t.y = l.y + l.contentHeight/2 - 40
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
---window1
-	local t = display.newImage("c1M.png")
-		t:scale(-l.contentWidth/5.5/t.contentWidth,l.contentWidth/5.5/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 68.5
-		t.y = l.y - t.contentHeight/2-6
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
---Window2
-		local t = display.newImage("c1M.png")
-		t:scale(-l.contentWidth/5.5/t.contentWidth,l.contentWidth/5.5/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 68.5+155.5
-		t.y = l.y - t.contentHeight/2-6
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
+		local t = display.newImage("sandcastle/s1.png")
+		t.alpha = 0
+		scaleS = (display.contentWidth/2)/t.contentWidth
+		t:removeSelf()
+		for i =1,16 do
+			
+			local t = display.newImage("sandcastle/s"..i..".png")
+			t.anchorX = 0
+			t.anchorY = 0
+			t.x = xInset*2
+			t.y = yInset*3
+			t:scale(scaleS,scaleS)
+			t.alpha = 0
+			
+			collide[#collide+1] = t
+			sceneGroup:insert(t)
+		end
 		
-
-		--Door2
-		-- local t = display.newImage("c1M.png")
-		-- t:scale(l.contentWidth/14/t.contentWidth,l.contentWidth/14/t.contentWidth)
-		-- t.x = l.x+7
-		-- t.y = l.y + t.contentHeight/2+45
-		-- t.alpha = 1
-		-- mask[#mask+1] = t
-		-- sceneGroup:insert(t)
-
-		--Door3
-		local t = display.newImage("c3M.png")
-		t:scale(l.contentWidth/7.6/t.contentWidth,l.contentWidth/7.6/t.contentWidth)
-		t.x = l.x - 2
-		t.y = l.y + t.contentHeight/2+65
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
---Door1
-		local t = display.newImage("c1M.png")
-		t:scale(l.contentWidth/7.6/t.contentWidth,l.contentWidth/7.6/t.contentWidth)
-		t.x = l.x -1.9
-		t.y = l.y + t.contentHeight/2+46
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-		--Roof1
-		local t = display.newImage("c3M.png")
-		t:scale(l.contentWidth/7.6/t.contentWidth,l.contentWidth/7.6/t.contentWidth)
-		t.x = l.x - 128.5
-		t.y = l.y - l.contentHeight/2 + 19
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
-		--Roof2
-		local t = display.newImage("c3M.png")
-		t:scale(l.contentWidth/7.6/t.contentWidth,l.contentWidth/7.6/t.contentWidth)
-		t.x = l.x - 128.5 + 52
-		t.y = l.y - l.contentHeight/2 + 19
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
-		--Roof3
-		local t = display.newImage("c3M.png")
-		t:scale(l.contentWidth/7.6/t.contentWidth,l.contentWidth/7.6/t.contentWidth)
-		t.x = l.x - 128.5 + 52*2
-		t.y = l.y - l.contentHeight/2 + 19
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
-		--Roof4
-		local t = display.newImage("c3M.png")
-		t:scale(l.contentWidth/7.6/t.contentWidth,l.contentWidth/7.6/t.contentWidth)
-		t.x = l.x - 128.5 + 52*3-3
-		t.y = l.y - l.contentHeight/2 + 19
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
-		--Roof5
-		local t = display.newImage("c3M.png")
-		t:scale(l.contentWidth/7.6/t.contentWidth,l.contentWidth/7.6/t.contentWidth)
-		t.x = l.x - 128.5 + 52*4-3
-		t.y = l.y - l.contentHeight/2 + 19
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
-		--Roof6
-		local t = display.newImage("c3M.png")
-		t:scale(l.contentWidth/7.6/t.contentWidth,l.contentWidth/7.6/t.contentWidth)
-		t.x = l.x - 128.5 + 52*5-3
-		t.y = l.y - l.contentHeight/2 + 19
-		t.alpha = 1
-		mask[#mask+1] = t
-		sceneGroup:insert(t)
-
-	local t = display.newImage("i1.png")
-		t:scale(l.contentWidth/2.35/t.contentWidth,l.contentWidth/2.35/t.contentWidth)
-		t.x = l.x - 77.5
-		t.y = l.y - l.contentHeight/2 + 56
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-		local t = display.newImage("i1.png")
-		t:scale(l.contentWidth/2.35/t.contentWidth,l.contentWidth/2.35/t.contentWidth)
-		t.x = l.x + 75
-		t.y = l.y - l.contentHeight/2 + 56
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-	--Wall1
-	local t = display.newImage("r3.png")
-		t:scale(l.contentWidth/2.9/t.contentWidth,l.contentWidth/2.9/t.contentWidth)
-		t.x = l.x - 80+1
-		t.y = l.y + l.contentHeight/2 - 71
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-		--Wall2
-	local t = display.newImage("r3.png")
-		t:scale(l.contentWidth/2.9/t.contentWidth,l.contentWidth/2.9/t.contentWidth)
-		t.x = l.x +75
-		t.y = l.y + l.contentHeight/2 - 71
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-			--Wall3
-	local t = display.newImage("r3.png")
-		t:scale(l.contentWidth/5/t.contentWidth,l.contentWidth/5/t.contentWidth)
-		t.x = l.x-2
-		t.y = l.y + l.contentHeight/2 - 40
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
---window1
-	local t = display.newImage("c1.png")
-		t:scale(-l.contentWidth/5.5/t.contentWidth,l.contentWidth/5.5/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 68.5
-		t.y = l.y - t.contentHeight/2-6
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
---Window2
-		local t = display.newImage("c1.png")
-		t:scale(-l.contentWidth/5.5/t.contentWidth,l.contentWidth/5.5/t.contentWidth)
-		t.x = l.x - l.contentWidth/2 + 68.5+155.5
-		t.y = l.y - t.contentHeight/2-6
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-		--Door1
-		-- local t = display.newImage("c1.png")
-		-- t:scale(l.contentWidth/14/t.contentWidth,l.contentWidth/14/t.contentWidth)
-		-- t.x = l.x-11
-		-- t.y = l.y + t.contentHeight/2+45
-		-- t.alpha = 0
-		-- collide[#collide+1] = t
-		-- sceneGroup:insert(t)
+		for i =1,16 do
+			local t = display.newImage("sandcastle/s"..i.."M.png")
+			t.anchorX = 0
+			t.anchorY = 0
+			t.x = xInset*2
+			t.y = yInset*3
+			t:scale(scaleS,scaleS)
+			t.alpha = 1
+			t.pos = i
+			whites[#whites+1] = t
+			sceneGroup:insert(t)
 		
-		--Door2
-		-- local t = display.newImage("c2.png")
-		-- t:scale(l.contentWidth/14/t.contentWidth,l.contentWidth/14/t.contentWidth)
-		-- t.x = l.x+7
-		-- t.y = l.y + t.contentHeight/2+45
-		-- t.alpha = 0
-		-- collide[#collide+1] = t
-		-- sceneGroup:insert(t)
-
-		--Door3
-		local t = display.newImage("c3.png")
-		t:scale(l.contentWidth/7.6/t.contentWidth,l.contentWidth/7.6/t.contentWidth)
-		t.x = l.x - 2
-		t.y = l.y + t.contentHeight/2+65
+		end
+		mask={{186,150},{640,158},{194,404},{636,405},{414,475},{643,249},{198,250},{791,57},{644,58},{496,55},{355,56},{206,57},{417,540},{50,57},{399,460},{441,463}}
+	amount = 16
+	elseif numb == 5 then	
+		local t = display.newImage("train/t1.png")
 		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
+		scaleS = (display.contentWidth/2)/t.contentWidth
+		t:removeSelf()
+		for i =1,14 do
+			
+			local t = display.newImage("train/t"..i..".png")
+			t.anchorX = 0
+			t.anchorY = 0
+			t.x = xInset
+			t.y = yInset*3
+			t:scale(scaleS,scaleS)
+			t.alpha = 0
+			
+			collide[#collide+1] = t
+			sceneGroup:insert(t)
+		end
 		
-		local t = display.newImage("c1.png")
-		t:scale(l.contentWidth/7.6/t.contentWidth,l.contentWidth/7.6/t.contentWidth)
-		t.x = l.x -1.9
-		t.y = l.y + t.contentHeight/2+46
+		for i =1,14 do
+			local t = display.newImage("train/t"..i.."M.png")
+			t.anchorX = 0
+			t.anchorY = 0
+			t.x = xInset
+			t.y = yInset*3
+			t:scale(scaleS,scaleS)
+			t.alpha = 1
+			t.pos = i
+			whites[#whites+1] = t
+			sceneGroup:insert(t)
+		
+		end
+		
+		mask={{800,420},{382,497},{856,288},{735,288},{657,116},{783,160},{910,159},{288,80},{98,577},{288,245},{244,616},{426,617},{616,608},{807,610}}
+		amount = 14
+	elseif numb == 6 then	
+		local t = display.newImage("building/b1.png")
 		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-		--Roof1
-		local t = display.newImage("c3.png")
-		t:scale(l.contentWidth/7.6/t.contentWidth,l.contentWidth/7.6/t.contentWidth)
-		t.x = l.x - 128.5
-		t.y = l.y - l.contentHeight/2 + 19
+		scaleS = (display.contentHeight - xInset)/t.contentHeight
+		t:removeSelf()
+		for i =1,24 do
+			
+			local t = display.newImage("building/b"..i..".png")
+			t.anchorX = 0
+			t.anchorY = 0
+			t.x = xInset*4
+			t.y = yInset
+			t:scale(scaleS,scaleS)
+			t.alpha = 0
+			
+			collide[#collide+1] = t
+			sceneGroup:insert(t)
+		end
+		for i =1,24 do
+			local t = display.newImage("building/b"..i.."M.png")
+			t.anchorX = 0
+			t.anchorY = 0
+			t.x = xInset*4
+			t.y = yInset
+			t:scale(scaleS,scaleS)
+			t.alpha = 1
+			t.pos = i
+			whites[#whites+1] = t
+			sceneGroup:insert(t)
+		
+		end
+		mask={{88,140},{88,372},{43,70},{89,70},{137,69},{43,117},{90,117},{136,118},{43,166},{90,166},{136,166},{40,215},{90,215},{135,214},{42,302},{88,302},{136,302},{42,350},{88,349},{136,350},{42,398},{89,396},{136,396},{90,460}}
+		amount = 24
+	elseif numb == 7 then	
+		local t = display.newImage("lighthouse/L1.png")
 		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-		--Roof2
-		local t = display.newImage("c3.png")
-		t:scale(l.contentWidth/7.6/t.contentWidth,l.contentWidth/7.6/t.contentWidth)
-		t.x = l.x - 128.5 + 52
-		t.y = l.y - l.contentHeight/2 + 19
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-		--Roof3
-		local t = display.newImage("c3.png")
-		t:scale(l.contentWidth/7.6/t.contentWidth,l.contentWidth/7.6/t.contentWidth)
-		t.x = l.x - 128.5 + 52*2
-		t.y = l.y - l.contentHeight/2 + 19
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-		--Roof4
-		local t = display.newImage("c3.png")
-		t:scale(l.contentWidth/7.6/t.contentWidth,l.contentWidth/7.6/t.contentWidth)
-		t.x = l.x - 128.5 + 52*3-3
-		t.y = l.y - l.contentHeight/2 + 19
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-		--Roof5
-		local t = display.newImage("c3.png")
-		t:scale(l.contentWidth/7.6/t.contentWidth,l.contentWidth/7.6/t.contentWidth)
-		t.x = l.x - 128.5 + 52*4-3
-		t.y = l.y - l.contentHeight/2 + 19
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-		--Roof6
-		local t = display.newImage("c3.png")
-		t:scale(l.contentWidth/7.6/t.contentWidth,l.contentWidth/7.6/t.contentWidth)
-		t.x = l.x - 128.5 + 52*5-3
-		t.y = l.y - l.contentHeight/2 + 19
-		t.alpha = 0
-		collide[#collide+1] = t
-		sceneGroup:insert(t)
-
-	amount = 15
+		scaleS = (display.contentHeight - xInset)/t.contentHeight
+		t:removeSelf()
+		for i =1,16 do
+			
+			local t = display.newImage("lighthouse/L"..i..".png")
+			t.anchorX = 0
+			t.anchorY = 0
+			t.x = xInset*4
+			t.y = yInset
+			t:scale(scaleS,scaleS)
+			t.alpha = 0
+			
+			collide[#collide+1] = t
+			sceneGroup:insert(t)
+		end
+		
+		for i =1,16 do
+			local t = display.newImage("lighthouse/L"..i.."M.png")
+			t.anchorX = 0
+			t.anchorY = 0
+			t.x = xInset*4
+			t.y = yInset
+			t:scale(scaleS,scaleS)
+			t.alpha = 1
+			t.pos = i
+			whites[#whites+1] = t
+			sceneGroup:insert(t)
+		
+		end
+		mask={{323,253},{323,569},{330,889},{468,1117},{200,1115},{330,575},{426,581},{228,579},{431,897},{330,895},{228,897},{268,251},{387,257},{330,55},{596,253},{41,253}}
+		amount = 16
+	elseif numb == 8 then	
+		scaleS = 0.3
+		for i =1,26 do
+			
+			local t = display.newImage("robot/r"..i..".png")
+			t.anchorX = 0
+			t.anchorY = 0
+			t.x = xInset*4
+			t.y = yInset
+			t:scale(0.3,0.3)
+			t.alpha = 0
+			
+			collide[#collide+1] = t
+			sceneGroup:insert(t)
+		end
+		
+		for i =1,26 do
+			local t = display.newImage("robot/r"..i.."M.png")
+			t.anchorX = 0
+			t.anchorY = 0
+			t.x = xInset*4
+			t.y = yInset
+			t:scale(0.3,0.3)
+			t.alpha = 1
+			t.pos = i
+			whites[#whites+1] = t
+			sceneGroup:insert(t)
+		
+		end
+		amount = 26
 	end
 end
-
+function findShape(startpos,endpos,x,y,tolerance)
+	for i=startpos,endpos do
+		if(x < collide[i].x + mask[i][1]*scaleS + tolerance and x > collide[i].x + mask[i][1]*scaleS - tolerance and y < collide[i].y + mask[i][2]*scaleS + tolerance and y > collide[i].y + mask[i][2]*scaleS - tolerance ) then
+			whites[i].alpha = 0
+			collide[i].alpha = 1
+			mask[i][1] = -xInset*2
+			mask[i][2] = -xInset*2
+			return true
+		end
+	end
+	return false
+end
 function scene:create( event )
 
 	-- Called when the scene's view does not exist.
@@ -1026,8 +456,9 @@ function scene:create( event )
 	local sceneGroup = self.view
 	
 end
-local backgroundMusicMenu = audio.loadStream( "music.mp3" )
-local backgroundMusicChannelMenu = audio.play( backgroundMusicMenu, { loops=1, fadein=3000 } )
+--local backgroundMusicMenu = audio.loadStream( "music.mp3" )
+--local backgroundMusicChannelMenu = audio.play( backgroundMusicMenu, { loops=1, fadein=3000 } )
+
 function scene:show( event )
 	sceneGroup = self.view
 	local phase = event.phase
@@ -1041,25 +472,33 @@ function scene:show( event )
 		-- e.g. start timers, begin animation, play audio, etc.
 		
 		if voltooivormbouvar == 1 then
-			shapes = {"f1.png","f2.png","f3.png",
-		"f4.png","f5.png"
-		,"r5.png","r2.png","r3.png","h3.png","triangle3.png","i1.png"}
+			shapes = {"flower/hexagon.png","flower/the circle.png","flower/oval.png",
+		"flower/Parellelogram.png","flower/square.png","train/EvenTriangle.png","train/VRectangle.png"}
 		elseif voltooivormbouvar == 2 then
-			shapes = {"f2.png","f3.png",
-		"r5.png","f5.png","r1.png",
-		"h3.png","h4.png","r2.png","r3.png","triangle3.png","i1.png"}
+			shapes = {"house/rectangle.png","house/square.png","house/triangle.png",
+		"house/upright rectangle.png","train/RIghtTraingle.png","train/parallelogram.png","train/VRectangle.png"}
 		elseif voltooivormbouvar == 3 then
-			shapes = {"f2.png","f3.png",
-		"r5.png","f5.png","r1.png",
-		"triangle3.png","h4.png","r2.png","r3.png","r4.png","i1.png"}
-		else 
-			shapes = {"c1.png","f2.png","f3.png",
-		"r5.png","f5.png","r1.png",
-		"h3.png","h3.png","r2.png","r3.png","r4.png","c3.png","i1.png"}
+			shapes = {"rocket/circle.png","rocket/rectangle.png","rocket/rectangle2.png",
+		"rocket/triangle.png","rocket/triangle1.png","rocket/triangle2.png","train/parallelogram.png"}
+		elseif voltooivormbouvar == 4 then
+			shapes = {"sandcastle/halfmoon.png","sandcastle/hrectangle.png","sandcastle/quarter1.png",
+		"sandcastle/quarter2.png","sandcastle/square1.png","sandcastle/uprightRectangle.png","train/parallelogram.png"}
+		elseif voltooivormbouvar == 5 then
+			shapes = {"train/1.png","train/EvenTriangle.png","train/HRectangle.png",
+		"train/parallelogram.png","train/RIghtTraingle.png","train/square.png","train/VRectangle.png"}
+		elseif voltooivormbouvar == 6 then
+			shapes = {"building/rectangle.png","building/smaller rectangle.png","building/square.png",
+		"train/parallelogram.png","train/RIghtTraingle.png"}
+		elseif voltooivormbouvar == 7 then
+			shapes = {"lighthouse/square1.png","lighthouse/square.png","lighthouse/rectangle.png","lighthouse/triangle.png",
+		"lighthouse/semicircle1.png","lighthouse/semicircle2.png","lighthouse/semicircle3.png","lighthouse/arrow1.png","lighthouse/arrow2.png"}
+		elseif voltooivormbouvar == 8 then
+			shapes = {"robot/parrallel.png","sandcastle/hrectangle.png","robot/square.png","robot/halfcircle.png",
+		"robot/diamond.png","robot/the circle.png","robot/circle_black.png","robot/triangle.png","robot/halfcircle_2.png","robot/halfcircle_2.png"}
 		end
 
 		
-		local background = display.newImage("background.png")
+	    background = display.newImage("background.png")
 		
 		background.x = display.contentWidth/2
 		background.y = display.contentHeight/2
@@ -1075,6 +514,7 @@ function scene:show( event )
 			home.alpha = 0
 			audio:pause(backgroundMusicChannelMenu)
 			timer.performWithDelay( 1000, (function(e) home.alpha = 0 end))
+			return true
 		end
 		home:addEventListener("tap",goHome)
 		sceneGroup:insert(home)
@@ -1090,401 +530,515 @@ function scene:show( event )
 		musicO.x = musicO.x+ xInset*1.5
 		musicO:addEventListener("tap",toggleMusic)
 		sceneGroup:insert(musicO)
-		isPlaying=true
+		if(isPlayingBS)then
+		musicO:toFront()
+		else
+		music:toFront()
+		end
+		if(voltooivormbouvar == 1) then
+		isPlayingBS = true
+		local backgroundMusicChannelMenu = audio.play( backgroundMusicMenu, { loops=1, fadein=3000,onComplete = function() isPlayingBS = false 
+		music:toFront()
+		end } )
+		end
 		sceneGroup:insert(display.newRect(display.contentWidth-display.actualContentWidth*1/6,display.contentHeight/2,display.actualContentWidth*1/3,display.actualContentHeight))
 		
 		for i = -(#shapes/2), #shapes/2-1 do
-		
+			print(shapes[#shapes/2+i+1])
 			local l = display.newImage(shapes[#shapes/2+i+1])
 			
-			if i == #shapes/2-1 then
-			l:scale(shapeHeight/l.contentWidth,shapeHeight/l.contentWidth)
+			local scaleF 
+			if voltooivormbouvar == 5 then
+				scaleF = shapeHeight/l.contentWidth
+				l:scale(scaleF,scaleF)
 			else
-			l:scale(shapeHeight/l.contentHeight,shapeHeight/l.contentHeight)
-			end
-			if i==-(#shapes/2) and voltooivormbouvar==4 then
-				l:scale(0.5,0.5)
+				if i == #shapes/2-1 then
+					scaleF = shapeHeight/l.contentWidth
+					l:scale(scaleF,scaleF)
+				else
+					scaleF = shapeHeight/l.contentHeight
+					l:scale(scaleF,scaleF)
+				end
+				if i==-(#shapes/2) and voltooivormbouvar==4 then
+					scaleF =0.5
+					l:scale(scaleF,scaleF)
+				end
 			end
 			l.y = 2*margin*i+shapeHeight*(i-1) --+ l.contentHeight/2
 			l.x = display.actualContentWidth*5/6
 			l.tag = shapes[#shapes/2+i+1]
 			l.origx = l.x
 			l.origy = l.y
+			l.origScaleF = scaleF
+			
 			group:insert(l)
 			
-			function l:touch( event )
-				if event.phase == "began" then
-					w = false
-					event.target.markY = event.target.y    -- store y location of object
-					event.target.markX = event.target.x
-					display.getCurrentStage():setFocus( event.target, event.id )
-					event.target.isFocus = true
-					
-					local chosen = math.random(1,3)
-		
-					local index = {}
-		
-					if (chosen == 1) then
-						index = {15,16,17,18,19,20,21}
-					elseif (chosen == 2) then
-						index = {22,23,24,25,26,27,28,29,30}
-					else
-						index = {31,32,33,34,35,36}
-					end
-		
-					cursprite = display.newSprite( myImageSheet , {frames=index,loopDirection = "bounce"} )
-		
-					if i == #shapes/2-1 then
-						--event.target.xScale = event.target.contentWidth/100
-						--event.target.yScale = event.target.contentWidth/100
-					event.target:scale(shapeHeight/event.target.contentHeight,shapeHeight/event.target.contentHeight)
-			else
-				--event.target.xScale = event.target.contentWidth*event.target.xScale/100
-				--event.target.yScale = event.target.contentHeight*event.target.yScale/100
-				event.target:scale(shapeHeight/event.target.contentHeight*2,shapeHeight/event.target.contentHeight*2)
-			end
-			if i==-(#shapes/2) and voltooivormbouvar==4 then
-				event.target:scale(0.5,0.5)
-			end
-					
-					curspritescale = (event.target.contentWidth-10)/cursprite.contentWidth
-					cursprite:scale(curspritescale,curspritescale)
-					cursprite.x = event.target.x
-					cursprite.y = event.target.y
-					group:insert(cursprite)
-					cursprite:play()
-					
-	
-				elseif event.phase == "moved" then
-	
-					if event.target.markY == nil or cursprite == nil then
-						return
-					end
-					local y = (event.y - event.yStart) + event.target.markY
-					local x = (event.x - event.xStart) + event.target.markX
-					
-					cursprite.x = event.target.x
-					cursprite.y = event.target.y
-		
-					event.target.y = y    -- move object based on calculations above
-					event.target.x = x
-					else
-						if cursprite then
-						cursprite:removeSelf()
-             			cursprite = nil
-             			end
-
-					if numb == 1 and l.tag == "f3.png" then
-						if (hasCollided(collide[1],l) and collide[1].alpha == 0) then
-						collide[1].alpha = 1
-						showCorrect(collide[1])
-						collide[1]:toBack()
-						mask[1]:toBack()
-						background:toBack()
-						elseif (hasCollided(collide[2],l) and collide[2].alpha == 0) then
-						collide[2].alpha = 1
-						showCorrect(collide[2])
-						elseif (hasCollided(collide[3],l) and collide[3].alpha == 0) then
-						collide[3].alpha = 1
-						showCorrect(collide[3])
-						end
-					elseif numb == 1 and l.tag == "f5.png" then
-						if (hasCollided(collide[4],l) and collide[4].alpha == 0) then
-						collide[4].alpha = 1
-						mask[4]:toBack()
-						background:toBack()
-						showCorrect(collide[4])
-						end
-					elseif numb == 1 and l.tag == "f1.png" then
-						if (hasCollided(collide[5],l) and collide[5].alpha == 0) then
-						collide[5].alpha = 1
-						showCorrect(collide[5])
-						collide[5]:toBack()
-						mask[5]:toBack()
-						background:toBack()
-						elseif (hasCollided(collide[6],l) and collide[6].alpha == 0) then
-						collide[6].alpha = 1
-						showCorrect(collide[6])
-						collide[6]:toBack()
-						mask[6]:toBack()
-						background:toBack()
-						elseif (hasCollided(collide[7],l) and collide[7].alpha == 0) then
-						collide[7].alpha = 1
-						showCorrect(collide[7])
-						collide[7]:toBack()
-						mask[7]:toBack()
-						background:toBack()
-						elseif (hasCollided(collide[8],l) and collide[8].alpha == 0) then
-						collide[8].alpha = 1
-						showCorrect(collide[8])
-						collide[8]:toBack()
-						mask[8]:toBack()
-						background:toBack()
-						elseif (hasCollided(collide[9],l) and collide[9].alpha == 0) then
-						collide[9].alpha = 1
-						showCorrect(collide[9])
-						collide[9]:toBack()
-						mask[9]:toBack()
-						background:toBack()
-						elseif (hasCollided(collide[10],l) and collide[10].alpha == 0) then
-						collide[10].alpha = 1
-						showCorrect(collide[10])
-						collide[10]:toBack()
-						mask[10]:toBack()
-						background:toBack()
-						end
-					elseif numb == 1 and l.tag == "f2.png" then
-						if (hasCollided(collide[12],l) and collide[12].alpha == 0) then
-						collide[12].alpha = 1
-						showCorrect(collide[12])
-						elseif (hasCollided(collide[11],l) and collide[11].alpha == 0) then
-						collide[11].alpha = 1
-						showCorrect(collide[11])
-						end
-					elseif numb == 1 and l.tag == "f4.png" then
-						if (hasCollided(collide[14],l) and collide[14].alpha == 0) then
-						collide[14].alpha = 1
-						showCorrect(collide[14])
-						elseif (hasCollided(collide[13],l) and collide[13].alpha == 0) then
-						collide[13].alpha = 1
-						showCorrect(collide[13])
-						end
-					elseif numb == 1 then
-						showWrong(event.target)
+			function listen( event )
+			 --if(isTransition==false)then
+					if event.phase == "began" then
 						w = true
+						event.target.markY = event.target.y    -- store y location of object
+						event.target.markX = event.target.x
+						display.getCurrentStage():setFocus( event.target )
+						--event.target.isFocus = true
+						--display.getCurrentStage():setFocus( event.target )
+						local chosen = math.random(1,3)
+						target = event.target
+						curShape = event.target.tag
+						print(curShape)
+						local index = {}
+			
+						if (chosen == 1) then
+							index = {15,16,17,18,19,20,21}
+						elseif (chosen == 2) then
+							index = {22,23,24,25,26,27,28,29,30}
+						else
+							index = {31,32,33,34,35,36}
+						end
+			
+						cursprite = display.newSprite( myImageSheet , {frames=index,loopDirection = "bounce"} )
+						
+						curspritescale = (event.target.contentWidth-10)/cursprite.contentWidth
+						cursprite:scale(curspritescale,curspritescale)
+						cursprite.x = event.target.x
+						cursprite.y = event.target.y
+						group:insert(cursprite)
+						cursprite:play()
+						
+						
+					elseif event.phase == "moved" then
+						-- if event.target == target then
+						
+						if target==nil or event.target == nil or cursprite == nil then	
+							--print("maybe")
+							return
+						end
+						local y = (event.y - event.yStart) + target.markY
+						local x = (event.x - event.xStart) + target.markX
+						--print("event.x = "..event.x)
+						--print("target.x - target.width = "..(target.x -20))
+						
+						target.y = y    -- move object based on calculations above
+						target.x = x
+						if(cursprite~= nil)then
+						cursprite.x = target.x
+						cursprite.y = target.y
+						end
+						
+						
+						
+					elseif event.phase == "ended"  then
+							print("ended")
+							
+								--removeListeners()
+								if cursprite then
+								cursprite:removeSelf()
+								cursprite = nil
+								end
+							if(numb == 1 and curShape == "flower/Parellelogram.png") then
+								if(findShape(1,3,event.x,event.y,xInset)) then
+								showCorrect(event)
+								w = false
+								else
+								showWrong(event.target)
+								end
+								
+							elseif(numb == 1 and curShape == "flower/the circle.png") then
+								if(findShape(4,9,event.x,event.y,xInset)) then
+								showCorrect(event)
+								w = false
+								else
+								showWrong(event.target)
+								end
+								
+							elseif(numb == 1 and curShape == "flower/oval.png")then
+								if(findShape(10,11,event.x,event.y,xInset)) then
+								showCorrect(event)
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 1 and curShape == "flower/hexagon.png")then
+								if(findShape(12,12,event.x,event.y,xInset)) then
+								showCorrect(event)
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 1 and curShape == "flower/square.png")then
+								if(findShape(13,14,event.x,event.y,xInset*2)) then
+								showCorrect(event)
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 1)  then
+									showWrong(event.target)
+							end
+							
+							if(numb == 2 and curShape == "house/rectangle.png") then
+								if(findShape(1,2,event.x,event.y,xInset*3)) then
+								showCorrect(event)
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 2 and curShape == "house/triangle.png")then
+								if(findShape(3,3,event.x,event.y,xInset*3)) then
+								showCorrect(event)
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 2 and curShape == "house/upright rectangle.png")then
+								if(findShape(4,4,event.x,event.y,xInset)) then
+								showCorrect(event)
+								whites[1]:toBack()
+								background:toBack()
+								w = false
+								elseif(findShape(7,7,event.x,event.y,xInset)) then
+								showCorrect(event)
+								w = false
+								else
+								showWrong(event.target)
+								end
+							
+							elseif(numb == 2 and curShape == "house/square.png")then
+								--print("touched")
+								if(findShape(5,6,event.x,event.y,xInset)) then
+								showCorrect(event)
+								whites[2]:toBack()
+								background:toBack()
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 2)  then
+								showWrong(event.target)
+							end
+							if(numb == 3 and curShape == "rocket/rectangle.png") then
+								if(findShape(1,3,event.x,event.y,xInset*2)) then
+								showCorrect(event)
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 3 and curShape == "rocket/rectangle2.png")then
+								if(findShape(4,5,event.x,event.y,xInset*2)) then
+								showCorrect(event)
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 3 and curShape == "rocket/triangle.png")then
+								if(findShape(6,6,event.x,event.y,xInset)) then
+								showCorrect(event)
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 3 and curShape == "rocket/triangle1.png")then
+								if(findShape(7,7,event.x,event.y,xInset*2)) then
+								showCorrect(event)
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 3 and curShape == "rocket/triangle2.png")then
+								if(findShape(8,8,event.x,event.y,xInset*2)) then
+								showCorrect(event)
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 3 and curShape == "rocket/circle.png")then
+								if(findShape(9,9,event.x,event.y,xInset)) then
+								whites[1]:toBack()
+								whites[2]:toBack()
+								background:toBack()
+								showCorrect(event)
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb ==3)  then
+								showWrong(event.target)
+							end
+							if(numb == 4 and curShape == "sandcastle/hrectangle.png") then
+								if(findShape(1,2,event.x,event.y,xInset*2)) then
+								showCorrect(event)
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 4 and curShape == "sandcastle/uprightRectangle.png")then
+								if(findShape(3,5,event.x,event.y,xInset*2)) then
+								showCorrect(event)
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 4 and curShape == "sandcastle/square1.png")then
+								if(findShape(8,14,event.x,event.y,xInset)) then
+								showCorrect(event)
+								whites[5]:toBack()
+								background:toBack()
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 4 and curShape == "sandcastle/quarter2.png")then
+								if(findShape(15,15,event.x,event.y,xInset)) then
+								showCorrect(event)
+								whites[5]:toBack()
+								background:toBack()
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 4 and curShape == "sandcastle/quarter1.png")then
+								if(findShape(16,16,event.x,event.y,xInset)) then
+								showCorrect(event)
+								whites[5]:toBack()
+								background:toBack()
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 4 and curShape == "sandcastle/halfmoon.png")then
+								if(findShape(6,7,event.x,event.y,xInset)) then
+								showCorrect(event)
+								whites[3]:toBack()
+								whites[4]:toBack()
+								whites[1]:toBack()
+								whites[2]:toBack()
+								background:toBack()
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 4)  then
+								showWrong(event.target)
+							end
+							if(numb == 5 and curShape == "train/1.png") then
+								if(findShape(11,14,event.x,event.y,xInset)) then
+								showCorrect(event)
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 5 and curShape == "train/parallelogram.png") then
+								if(findShape(5,7,event.x,event.y,xInset)) then
+								showCorrect(event)
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 5 and curShape == "train/EvenTriangle.png") then
+								if(findShape(8,8,event.x,event.y,xInset)) then
+								showCorrect(event)
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 5 and curShape == "train/RIghtTraingle.png") then
+								if(findShape(9,9,event.x,event.y,xInset)) then
+								showCorrect(event)
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 5 and curShape == "train/VRectangle.png") then
+								if(findShape(10,10,event.x,event.y,xInset*2)) then
+								showCorrect(event)
+								w = false
+								elseif(findShape(1,1,event.x,event.y,xInset*2)) then
+								showCorrect(event)
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 5 and curShape == "train/square.png") then
+								if(findShape(3,4,event.x,event.y,xInset)) then
+								showCorrect(event)
+								whites[1]:toBack()
+								background:toBack()
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 5 and curShape == "train/HRectangle.png") then
+								if(findShape(2,2,event.x,event.y,xInset*2)) then
+								showCorrect(event)
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 5)  then
+								showWrong(event.target)
+							end
+							if(numb == 6 and curShape == "building/rectangle.png") then
+								if(findShape(1,2,event.x,event.y,xInset*2)) then
+								showCorrect(event)
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 6 and curShape == "building/smaller rectangle.png")then
+								if(findShape(24,24,event.x,event.y,xInset)) then
+								showCorrect(event)
+								whites[2]:toBack()
+								background:toBack()
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 6 and curShape == "building/square.png")then
+								if(findShape(3,23,event.x,event.y,xInset)) then
+								whites[1]:toBack()
+								whites[2]:toBack()
+								background:toBack()
+								showCorrect(event)
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 6)  then
+								showWrong(event.target)
+							end
+							if(numb == 7 and curShape == "lighthouse/square1.png") then
+								if(findShape(2,3,event.x,event.y,xInset*2)) then
+								showCorrect(event)
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 7 and curShape == "lighthouse/square.png")then
+								if(findShape(1,1,event.x,event.y,xInset*2)) then
+								showCorrect(event)
+								-- whites[13]:toBack()
+								-- background:toBack()
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 7 and curShape == "lighthouse/triangle.png")then
+								if(findShape(6,11,event.x,event.y,xInset)) then
+								showCorrect(event)
+								whites[2]:toBack()
+								whites[3]:toBack()
+								background:toBack()
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 7 and curShape == "lighthouse/rectangle.png")then
+								if(findShape(4,5,event.x,event.y,xInset*2)) then
+								showCorrect(event)
+								
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 7 and curShape == "lighthouse/semicircle1.png")then
+								if(findShape(13,13,event.x,event.y,xInset)) then
+								showCorrect(event)
+								whites[1]:toBack()
+								background:toBack()
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 7 and curShape == "lighthouse/semicircle2.png")then
+								if(findShape(12,12,event.x,event.y,xInset)) then
+								showCorrect(event)
+								whites[1]:toBack()
+								background:toBack()
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 7 and curShape == "lighthouse/semicircle3.png")then
+								if(findShape(14,14,event.x,event.y,xInset)) then
+								showCorrect(event)
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 7 and curShape == "lighthouse/arrow1.png")then
+								if(findShape(15,15,event.x,event.y,xInset)) then
+								showCorrect(event)
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 7 and curShape == "lighthouse/arrow2.png")then
+								if(findShape(16,16,event.x,event.y,xInset)) then
+								showCorrect(event)
+								w = false
+								else
+								showWrong(event.target)
+								end
+							elseif(numb == 7) then
+								showWrong(event.target)
+							end
+							
+							if w == false then
+							event.target.y = event.target.markY      -- store y location of object
+							event.target.x = event.target.markX
+							end
+							curShape = nil
+							target = nil
+							display.getCurrentStage():setFocus( nil )
+							self.isFocus = false
+							--addListeners()
 					end
-					
-					if numb == 2 and l.tag == "i1.png" then
-						if (hasCollided(collide[1],l) and collide[1].alpha == 0) then
-						collide[1].alpha = 1
-						collide[1]:toBack()
-						background:toBack()
-						mask[1].alpha=0
-						showCorrect(collide[1])
-						elseif (hasCollided(collide[2],l) and collide[2].alpha == 0) then
-						collide[2].alpha = 1
-						collide[2]:toBack()
-						mask[2].alpha=0
-						background:toBack()
-						showCorrect(collide[2])
-						end
-					elseif numb == 2 and l.tag == "r3.png" then
-						if (hasCollided(collide[3],l) and collide[3].alpha == 0) then
-						collide[3].alpha = 1
-						showCorrect(collide[3])
-						elseif (hasCollided(collide[5],l) and collide[5].alpha == 0) then
-						collide[5].alpha = 1
-						showCorrect(collide[5])
-						end
-					elseif numb == 2 and l.tag == "h3.png" then
-						if (hasCollided(collide[4],l) and collide[4].alpha == 0) then
-						collide[4].alpha = 1
-						showCorrect(collide[4])
-						end
-					elseif numb == 2 and l.tag == "h4.png" then
-						if (hasCollided(collide[6],l) and collide[6].alpha == 0) then
-						collide[6].alpha = 1
-						showCorrect(collide[6])
-						elseif (hasCollided(collide[7],l) and collide[7].alpha == 0) then
-						collide[7].alpha = 1
-						showCorrect(collide[7])
-						end
-					elseif numb == 2 then
-						showWrong(event.target)
-						w = true
-					end
-					
-					if numb == 3 and l.tag == "i1.png" then
-						if (hasCollided(collide[1],l) and collide[1].alpha == 0) then
-						collide[1].alpha = 1
-						showCorrect(collide[1])
-						collide[1]:toBack()
-						background:toBack()
-						mask[1].alpha=0
-						elseif (hasCollided(collide[2],l) and collide[2].alpha == 0) then
-						collide[2].alpha = 1
-						showCorrect(collide[2])
-						collide[2]:toBack()
-						background:toBack()
-						mask[2].alpha=0
-						elseif (hasCollided(collide[3],l) and collide[3].alpha == 0) then
-						collide[3].alpha = 1
-						showCorrect(collide[3])
-						collide[3]:toBack()
-						background:toBack()
-						mask[3].alpha=0
-						end
-					elseif numb == 3 and l.tag == "r1.png" then
-						if (hasCollided(collide[4],l) and collide[4].alpha == 0) then
-						collide[4].alpha = 1
-						showCorrect(collide[4])
-						end
-					elseif numb == 3 and l.tag == "r2.png" then
-						if (hasCollided(collide[5],l) and collide[5].alpha == 0) then
-						collide[5].alpha = 1
-						showCorrect(collide[5])
-						end
-					elseif numb == 3 and l.tag == "r5.png" then
-						if (hasCollided(collide[6],l) and collide[6].alpha == 0) then
-						collide[6].alpha = 1
-						showCorrect(collide[6])
-					end
-					elseif numb == 3 and l.tag == "r3.png" then
-						if (hasCollided(collide[7],l) and collide[7].alpha == 0) then
-						collide[7].alpha = 1
-						showCorrect(collide[7])
-						elseif (hasCollided(collide[8],l) and collide[8].alpha == 0) then
-						collide[8].alpha = 1
-						showCorrect(collide[8])
-						end
-					elseif numb == 3 and l.tag == "r4.png" then
-						if (hasCollided(collide[9],l) and collide[9].alpha == 0) then
-						collide[9].alpha = 1
-						showCorrect(collide[9])
-						end
-					elseif numb == 3 then
-						showWrong(event.target)
-						w = true
-					end
-
-					
-					if numb == 4 and l.tag == "i1.png" then
-						if (hasCollided(collide[1],l) and collide[1].alpha == 0) then
-						collide[1].alpha = 1
-						collide[1]:toBack()
-						background:toBack()
-						mask[1].alpha=0
-						showCorrect(collide[1])
-						elseif (hasCollided(collide[2],l) and collide[2].alpha == 0) then
-						collide[2].alpha = 1
-						collide[2]:toBack()
-						background:toBack()
-						mask[2].alpha=0
-						showCorrect(collide[2])
-						end
-					elseif numb == 4 and l.tag == "r3.png" then
-						if (hasCollided(collide[3],l) and collide[3].alpha == 0) then
-						collide[3].alpha = 1
-						collide[3]:toBack()
-						background:toBack()
-						mask[3].alpha=0
-						showCorrect(collide[3])
-						elseif (hasCollided(collide[4],l) and collide[4].alpha == 0) then
-						collide[4].alpha = 1
-						collide[4]:toBack()
-						background:toBack()
-						mask[4].alpha=0
-						showCorrect(collide[4])
-						elseif (hasCollided(collide[5],l) and collide[5].alpha == 0) then
-						collide[5].alpha = 1
-						collide[5]:toBack()
-						background:toBack()
-						mask[5].alpha=0
-						showCorrect(collide[5])
-						end
-					elseif numb == 4 and l.tag == "c1.png" then
-						if (hasCollided(collide[6],l) and collide[6].alpha == 0) then
-						collide[6].alpha = 1
-						showCorrect(collide[6])
-						elseif (hasCollided(collide[7],l) and collide[7].alpha == 0) then
-						collide[7].alpha = 1
-						showCorrect(collide[7])
-						elseif (hasCollided(collide[9],l) and collide[9].alpha == 0) then
-						collide[9].alpha = 1
-						showCorrect(collide[9])
-						end
-					-- elseif numb == 4 and l.tag == "c2.png" then
-						-- if (hasCollided(collide[8],l) and collide[8].alpha == 0) then
-						-- collide[8].alpha = 1
-						-- showCorrect(collide[8])
-						-- elseif (hasCollided(collide[9],l) and collide[9].alpha == 0) then
-						-- collide[9].alpha = 1
-						-- showCorrect(collide[9])
-						-- end
-					elseif numb == 4 and l.tag == "c3.png" then
-						if (hasCollided(collide[8],l) and collide[8].alpha == 0) then
-						collide[8].alpha = 1
-						showCorrect(collide[8])
-						elseif (hasCollided(collide[10],l) and collide[10].alpha == 0) then
-						collide[10].alpha = 1
-						showCorrect(collide[10])
-						elseif (hasCollided(collide[11],l) and collide[11].alpha == 0) then
-						collide[11].alpha = 1
-						showCorrect(collide[11])
-						elseif (hasCollided(collide[12],l) and collide[12].alpha == 0) then
-						collide[12].alpha = 1
-						showCorrect(collide[12])
-						elseif (hasCollided(collide[13],l) and collide[13].alpha == 0) then
-						collide[13].alpha = 1
-						showCorrect(collide[13])
-						elseif (hasCollided(collide[14],l) and collide[14].alpha == 0) then
-						collide[14].alpha = 1
-						showCorrect(collide[14])
-						elseif (hasCollided(collide[15],l) and collide[15].alpha == 0) then
-						collide[15].alpha = 1
-						showCorrect(collide[15])
-						-- elseif (hasCollided(collide[16],l) and collide[16].alpha == 0) then
-						-- collide[16].alpha = 1
-						-- showCorrect(collide[16])
-						end
-					elseif numb == 4 then
-						showWrong(event.target)
-						w = true
-					end
-
-
-
-					
-					display.getCurrentStage():setFocus( nil, event.id )
-					event.target.isFocus = false
-					
-					if w == false then
-					event.target:scale(0.5,0.5)
-					self.x = self.origx
-					self.y = self.origy
-					end
-				end
-	
-				return true
+				--end
+				--return true
+				
 			end	
-	
-			l:addEventListener( "touch", l )
+			
+			l:addEventListener( "touch", listen )
+			listeners[#listeners+1] = l
 	
 		end
 
-drag = display.newImage("drag.png")
+		drag = display.newImage("drag.png")
 		drag:scale(1/2,1/2)
 		drag.y = display.contentHeight/2
 		drag.x = display.contentWidth-display.actualContentWidth*1/3
-
+		drag.name = "drag"
 		local y = drag.y 
 	        group.y = (y-display.contentHeight/2)*2 + display.contentHeight/1.5 + 25
 	    
 -- touch listener function
 	function drag:touch( event )
-    if event.phase == "began" then
-	
-        self.markY = self.y    -- store y location of object
-        
-        display.getCurrentStage():setFocus( event.target, event.id )
-		event.target.isFocus = true
-	
-    elseif event.phase == "moved" then
-	
-        local y = (event.y - event.yStart) + self.markY
-        
-        if (y > 0 + event.target.contentHeight/2 and y < display.actualContentHeight - event.target.contentHeight/2) then
-        self.y =  y    -- move object based on calculations above
-        
-        --Transform function
-        group.y = (y-display.contentHeight/2)*3.1 + display.contentHeight/1.5 + 35
-        end
-        else
-        event.target.isFocus = false
-        display.getCurrentStage():setFocus( nil, event.id )
-        
-    end
-    
+	---if(isTransition == false)then
+		if event.phase == "began" then
+			
+			if(event.target.name == "drag") then
+			self.markY = self.y    -- store y location of object
+			dragTarget = event.target.name
+			display.getCurrentStage():setFocus( event.target, event.id )
+			event.target.isFocus = true
+			end
+		elseif event.phase == "moved" then
+			if self.markY==nil or event.target == nil then	
+							--print("maybe")
+							return
+			end
+		   local y = (event.y - event.yStart) + self.markY
+			
+			if (y > 0 + event.target.contentHeight/2 and y < display.actualContentHeight - event.target.contentHeight/2) then
+			self.y =  y    -- move object based on calculations above
+			
+			--Transform function
+			group.y = (y-display.contentHeight/2)*3.1 + display.contentHeight/1.5 + 35
+			
+			end
+		end
+	--end
+    display.getCurrentStage():setFocus( nil )
     return true
 	end
 
@@ -1512,6 +1066,7 @@ function scene:hide( event )
 		--
 		-- INSERT code here to pause the scene
 		-- e.g. stop timers, stop animation, unload sounds, etc.)
+		audio.dispose( backgroundMusicMenu )
 		
 	elseif phase == "did" then
 		-- Called when the scene is now off screen

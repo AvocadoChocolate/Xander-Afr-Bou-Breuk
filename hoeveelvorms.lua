@@ -74,13 +74,13 @@ local function NextLv(event)
  speechtext = nil
  					end
 
-					composer.removeScene("rangskik")
-composer.removeScene("thisorthat")
-composer.removeScene("patrone")
---composer.removeScene("hoeveelvorms")
-composer.removeScene("vormwatpas")
+					-- composer.removeScene("rangskik")
+-- composer.removeScene("thisorthat")
+-- composer.removeScene("patrone")
+composer.removeScene("hoeveelvorms")
+-- composer.removeScene("vormwatpas")
 
-composer.gotoScene( levels[n], { effect = "fade", time = 300 } )
+composer.gotoScene( levels[n] )
  
 end
 
@@ -231,10 +231,11 @@ function scene:show( event )
 
 		function goHome()
 			composer.removeScene("hoeveelvorms")
-			composer.gotoScene( "scene1" , "fade", 500)
+			composer.gotoScene( "scene1")
 			home.alpha = 0
 			--audio.resume(backgroundMusicChannel)
-			timer.performWithDelay( 1000, (function(e) home.alpha = 0 end))
+			--timer.performWithDelay( 1000, (function(e) home.alpha = 0 end))
+			return true
 		end
 		home:addEventListener("tap",goHome)
 		sceneGroup:insert(home)

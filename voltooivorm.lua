@@ -4,7 +4,7 @@ local xInset = display.contentWidth/20
 local yInset = display.contentHeight/20
 local group = display.newGroup()
 --5 should fit on the scene, with a margin equivalent of 1 of the vorms
-
+local backgroundMusicMenu = audio.loadStream( "music.mp3" )
 local shapeHeight = display.contentHeight/6
 
 local margin = shapeHeight/6
@@ -12,14 +12,17 @@ local margin = shapeHeight/6
 local sceneGroup
 local drag
 function toggleMusic()
-		if (isPlaying) then
+		if (isPlayingVWP) then
 		audio.pause(backgroundMusicChannel)
-		isPlaying = false
+		isPlayingVWP = false
 		music:toFront()
 		else
 		 backgroundMusicMenu = audio.loadStream( "music.mp3" )
-		audio.play( backgroundMusicMenu, { loops=1, fadein=3000 } )
-		isPlaying = true
+		 local backgroundMusicChannelMenu = audio.play( backgroundMusicMenu, { loops=1, fadein=3000,onComplete = function() isPlayingVWP = false 
+		music:toFront()
+		end } )
+		--audio.play( backgroundMusicMenu, { loops=1, fadein=3000 } )
+		isPlayingVWP = true
 		musicO:toFront()
 		end
 		return true
@@ -33,14 +36,14 @@ local sheetInfo = require("animations")
 		local myImageSheet = graphics.newImageSheet( "animations.png", sheetInfo:getSheet() )
 		local cursprite
 
-local shapes = {"circle2.png","circle3.png","circle4.png",
+local shapes = {"rectangle.png","circle2.png","circle3.png","circle4.png",
 "circle5.png","circle6.png","square.png","triangle1.png",
 "triangle2.png","triangle3.png","triangle4.png","triangle5.png"}
 
 local questions = {"voltooi_vorm_1.png","voltooi_vorm_2.png","voltooi_vorm_3.png",
 "voltooi_vorm_4.png","voltooi_vorm_5.png","voltooi_vorm_6.png"}
 
-local n = {1,3,4,6}
+local n = {1,2,3,4,6}
 local answ = 0
 local amount = 0
 
@@ -61,8 +64,8 @@ local function removeCorrect()
 	voltooivormvar = voltooivormvar + 1
 
 	if voltooivormvar <= #n then
-			audio:pause(backgroundMusicChannelMenu)
-			timer.performWithDelay( 1000, (function(e) composer.removeScene("voltooivorm")
+			--audio:pause(backgroundMusicChannelMenu)
+			timer.performWithDelay( 500, (function(e) composer.removeScene("voltooivorm")
 			composer.gotoScene( "voltooivorm" , "fade", 500) end) )
 			else
 			if(complete == false) then
@@ -100,7 +103,7 @@ local function removeWrong(obj)
 
 	if voltooivormvar <= #n then
 			audio:pause(backgroundMusicChannelMenu)
-			timer.performWithDelay( 1000, (function(e) composer.removeScene("voltooivorm")
+			timer.performWithDelay( 500, (function(e) composer.removeScene("voltooivorm")
 			composer.gotoScene( "voltooivorm" , "fade", 500) end) )
 			else
 			if(complete==false) then
@@ -126,8 +129,8 @@ local function removeWrong(obj)
 end
 
 local function showCorrect(obj)
-	cursprite = display.newSprite( myImageSheet , {frames={1,2,3,4,5,6,7},loopDirection = "bounce", time = 600, loopCount = 1} )
-		
+	cursprite = display.newSprite( myImageSheet , {frames={1,2,3,4,5,6,7},loopDirection = "bounce", time = 600, loopCount = 1,onComplete=function() display.getCurrentStage():setFocus( nil ) end} )
+	display.getCurrentStage():setFocus( cursprite )		
 	curspritescale = (obj.contentWidth-10)/cursprite.contentWidth/2
 	cursprite:scale(curspritescale,curspritescale)
 	cursprite.x = obj.x
@@ -145,14 +148,14 @@ d.y = cursprite.y
 sceneGroup:insert(d)
 addme[#addme+1] = d
 	
-	timer.performWithDelay( 600, removeCorrect)
+	timer.performWithDelay( 300, removeCorrect)
 	
 	answ = answ + 1
 end
 
 local function showWrong(obj)
-	cursprite = display.newSprite( myImageSheet , {frames={8,9,10,11,12,13,14},loopDirection = "bounce", time = 600, loopCount = 1} )
-		
+	cursprite = display.newSprite( myImageSheet , {frames={8,9,10,11,12,13,14},loopDirection = "bounce", time = 300, loopCount = 1,onComplete=function() display.getCurrentStage():setFocus( nil ) end} )
+		display.getCurrentStage():setFocus( cursprite )	
 	curspritescale = (obj.contentWidth-10)/cursprite.contentWidth/2
 	cursprite:scale(curspritescale,curspritescale)
 	cursprite.x = obj.x
@@ -163,7 +166,7 @@ local function showWrong(obj)
 	cursprite:play()
 	
 	remme[#remme+1] = cursprite
-	timer.performWithDelay( 600, removeWrong)
+	removeWrong()
 end
 
 local function hasCollided( obj1, obj2 )
@@ -283,23 +286,40 @@ function AddShapes()
 		
 		
 	elseif numb == 2 then
-	local l = display.newImage(questions[2])
-	l:scale(0.25,0.25)
-	l.x = display.contentWidth/2 - display.actualContentWidth*0.1
-	l.y = display.contentHeight/2
-	sceneGroup:insert(l)
-	
-	local t = display.newImage("Parrallelogram.png")
-	t:scale(l.contentHeight/2/t.contentHeight,l.contentHeight/2/t.contentHeight)
-	t.x = l.x 
-	t.y = l.y - l.contentHeight/2 + t.contentHeight/2
+	-- local l = display.newImage(questions[2])
+	-- l:scale(0.25,0.25)
+	-- l.x = display.contentWidth/2 - display.actualContentWidth*0.1
+	-- l.y = display.contentHeight/2
+	-- sceneGroup:insert(l)
+	local t = display.newImage("rect1M.png")
+	t:scale(0.3,0.3)
+	t.x = xInset*7
+	t.y = yInset*6
+	t.alpha =1
 	sceneGroup:insert(t)
 	
-	local t = display.newImage("Parrallelogram.png")
-	t:scale(l.contentHeight/2/t.contentHeight,l.contentHeight/2/t.contentHeight)
-	t.x = l.x 
-	t.y = l.y + l.contentHeight/2 - t.contentHeight/2
-	sceneGroup:insert(t)
+	local t1 = display.newImage("rect1M.png")
+	t1:scale(0.3,0.3)
+	t1.x = t1.x + xInset*7
+	t1.y = t.y + t.contentHeight
+	t1.alpha=1
+	sceneGroup:insert(t1)
+	
+	local t2 = display.newImage("rect1.png")
+	t2:scale(0.3,0.3)
+	t2.x = xInset*7 
+	t2.y = yInset*6
+	t2.alpha =0
+	collide[#collide+1] = t2
+	sceneGroup:insert(t2)
+	
+	local t3 = display.newImage("rect2.png")
+	t3:scale(0.3,0.3)
+	t3.x = t3.x + xInset*7
+	t3.y = t2.y + t2.contentHeight
+	t3.alpha =0
+	collide[#collide+1] = t3
+	sceneGroup:insert(t3)
 	
 	amount = 2
 	elseif numb == 3 then
@@ -591,11 +611,11 @@ function scene:create( event )
 	-- 
 	-- INSERT code here to initialize the scene
 	-- e.g. add display objects to 'sceneGroup', add touch listeners, etc.
-
+	
 	local sceneGroup = self.view
 end
-local backgroundMusicMenu = audio.loadStream( "music.mp3" )
-local backgroundMusicChannelMenu = audio.play( backgroundMusicMenu, { loops=1, fadein=3000 } )
+
+
 function scene:show( event )
 	sceneGroup = self.view
 	local phase = event.phase
@@ -607,6 +627,7 @@ function scene:show( event )
 		-- 
 		-- INSERT code here to make the scene come alive
 		-- e.g. start timers, begin animation, play audio, etc.
+		
 		complete = false
 		
 		local background = display.newImage("background.png")
@@ -627,6 +648,7 @@ function scene:show( event )
 			audio:pause(backgroundMusicChannelMenu)
 			--audio.play( backgroundMusicMenu, { loops=1, fadein=3000 } )
 			timer.performWithDelay( 1000, (function(e) home.alpha = 0 end))
+			return true
 		end
 		home:addEventListener("tap",goHome)
 		sceneGroup:insert(home)
@@ -642,7 +664,17 @@ function scene:show( event )
 		musicO.x = musicO.x+ xInset*1.5
 		musicO:addEventListener("tap",toggleMusic)
 		sceneGroup:insert(musicO)
-		isPlaying=true
+		if(isPlayingVWP)then
+		musicO:toFront()
+		else
+		music:toFront()
+		end
+		if(voltooivormvar == 1) then
+		isPlayingVWP = true
+		local backgroundMusicChannelMenu = audio.play( backgroundMusicMenu, { loops=1, fadein=3000,onComplete = function() isPlayingVWP = false 
+		music:toFront()
+		end } )
+		end
 		sceneGroup:insert(display.newRect(display.contentWidth-display.actualContentWidth*1/6,display.contentHeight/2,display.actualContentWidth*1/3,display.actualContentHeight))
 		
 		for i = -(#shapes/2), #shapes/2-1 do
@@ -742,7 +774,18 @@ function scene:show( event )
 						showWrong(event.target)
 						w = true
 					end
-					
+					if numb == 2 and l.tag == "rectangle.png" then
+						if (hasCollided(collide[1],l) and collide[1].alpha == 0) then
+							collide[1].alpha = 1
+							showCorrect(collide[1])
+						elseif (hasCollided(collide[2],l) and collide[2].alpha == 0) then
+							collide[2].alpha = 1
+							showCorrect(collide[2])
+						end
+					elseif numb == 2 then
+						showWrong(event.target)
+						w = true
+					end
 					if numb == 3 and l.tag == "square.png" then
 						if (hasCollided(collide[1],l) and collide[1].alpha == 0) then
 						collide[1].alpha = 1
@@ -837,7 +880,9 @@ drag = display.newImage("drag.png")
 		event.target.isFocus = true
 	
     elseif event.phase == "moved" then
-	
+		if self.markY == nil then
+						return
+		end
         local y = (event.y - event.yStart) + self.markY
         
         if (y > 0 + event.target.contentHeight/2 and y < display.actualContentHeight - event.target.contentHeight/2) then

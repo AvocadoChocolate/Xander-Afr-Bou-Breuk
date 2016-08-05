@@ -174,13 +174,13 @@ local function NextLv(event)
  					end
  
 
-					--composer.removeScene("rangskik")
-composer.removeScene("thisorthat")
-composer.removeScene("patrone")
-composer.removeScene("hoeveelvorms")
-composer.removeScene("vormwatpas")
+composer.removeScene("rangskik")
+-- composer.removeScene("thisorthat")
+-- composer.removeScene("patrone")
+-- composer.removeScene("hoeveelvorms")
+-- composer.removeScene("vormwatpas")
 
-composer.gotoScene( levels[n], { effect = "fade", time = 300 } )
+composer.gotoScene( levels[n] )
  
 end
 
@@ -244,7 +244,7 @@ shadow[i] = nil
 end
 local Sound = audio.loadSound( "success.mp3" )
                     		audio.play( Sound )
-composer.removeScene("scene1")
+--composer.removeScene("scene1")
 	--composer.gotoScene( "scene1" , "fade", 500)
 if counter%5 == 0 then
 counter = counter + 1
@@ -305,27 +305,6 @@ local function move( event )
     return true
 end
 
-local function RemoveStuffies()
-        home:removeSelf()
-        home = nil
-        
-        media.stopSound()
-end
-
-local function tohome(event)
-if ( event.phase == "began" ) then
-
-        elseif ( event.phase == "moved" ) then
-            print( "moved phase" )
-
-        elseif ( event.phase == "ended" or event.phase == "cancelled" ) then
-        RemoveStuffies()
-            composer.gotoScene( "scene1", { effect = "fade", time = 300 } )
-            
-        end
-
-    return true
-end
 
 function scene:show( event )
     sceneGroup = self.view
@@ -343,10 +322,11 @@ function scene:show( event )
 
 		function goHome()
 			composer.removeScene("rangskik")
-			composer.gotoScene( "scene1" , "fade", 500)
+			composer.gotoScene( "scene1" )
 			home.alpha = 0
 			--audio.resume(backgroundMusicChannel)
-			timer.performWithDelay( 1000, (function(e) home.alpha = 0 end))
+			--timer.performWithDelay( 1000, (function(e) home.alpha = 0 end))
+			return true
 		end
 		home:addEventListener("tap",goHome)
 		sceneGroup:insert(home)

@@ -30,9 +30,9 @@ local screenRight = display.screenOriginX+display.actualContentWidth
 local screenWidth = screenRight - screenLeft
 local screenHeight = screenBottom - screenTop
 
-local colorsList = {"#C91111","#D84E09","#FF8000","#F6EB20",
-"#51C201","#1C8E0D","#09C5F4","#2862B9","#7E44BC",
-"#FFFFFF","#943F07","#CCCCCC"}
+local colorsList = {"#51C201","#D84E09","#FF8000","#F6EB20",
+"#C91111","#1C8E0D","#09C5F4","#2862B9","#7E44BC",
+"#FFFFFF","#4C4646","#CCCCCC"}
 
 local pickedColor = {}
 
@@ -40,17 +40,17 @@ function colorPicker.showPicker(col)
 
 if col == nil then
 elseif col == 1 then
-colorsList = {"#C91111","#D84E09","#FF8000","#FFFFFF",
+colorsList = {"#FF8000","#D84E09","#C91111","#F6EB20",
 "#51C201","#1C8E0D","#09C5F4","#BC6EC7","#7E44BC",
-"#F6EB20","#943F07","#000000"}
+"#FFFFFF","#4C4646","#000000"}
 elseif col == 2 then
-	colorsList = {"#C91111","#D84E09","#FF8000","#F6EB20",
-"#51C201","#1C8E0D","#09C5F4","#2862B9","#7E44BC",
-"#FFFFFF","#943F07","#CCCCCC"}
+	colorsList = {"#FF8000","#D84E09","#C91111","#F6EB20",
+"#51C201","#1C8E0D","#09C5F4","#2862B9",
+"#7E44BC","#FFFFFF","#CCCCCC","#4C4646"}
 elseif col == 3 then
 colorsList = {"#C91111","#D84E09","#FF8000","#F6EB20",
 "#51C201","#1C8E0D","#09C5F4","#2862B9","#7E44BC",
-"#FFFFFF","#943F07","#000000"}
+"#FFFFFF","#4C4646","#000000"}
 end
 
 	local width = screenWidth

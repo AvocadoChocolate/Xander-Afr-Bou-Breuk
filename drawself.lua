@@ -41,34 +41,7 @@ function scene:show( event )
 		background.y = display.contentHeight/2
 		
 		sceneGroup:insert(background)
-		home = display.newImage("Home_button.png")
-		home:scale(0.4,0.4)
-		home.y = home.y + yInset*2
-		home.x = home.x + xInset*1.5
-
-		function goHome()
-			composer.removeScene("drawself")
-			composer.gotoScene( "scene1" , "fade", 500)
-			home.alpha = 0
-			audio.pause(backgroundMusicChannel)
-			timer.performWithDelay( 1000, (function(e) home.alpha = 0 end))
-		end
-		home:addEventListener("tap",goHome)
-		sceneGroup:insert(home)
 		sceneGroup:insert(line)
-		music = display.newImage("Music_off.png")
-		music:scale(0.4,0.4)
-		music.y = display.actualContentHeight - yInset*2
-		music.x = music.x+ xInset*1.5
-		music:addEventListener("tap",toggleMusic)
-		sceneGroup:insert(music)
-		musicO = display.newImage("Music_on.png")
-		musicO:scale(0.4,0.4)
-		musicO.y = display.actualContentHeight - yInset*2
-		musicO.x = musicO.x+ xInset*1.5
-		musicO:addEventListener("tap",toggleMusic)
-		sceneGroup:insert(musicO)
-		isPlaying=true
 		local t = display.newImage("corner.png")
 		t:scale(0.5,0.5)
 		t.x = display.screenOriginX + display.actualContentWidth*0.05
@@ -121,11 +94,41 @@ function scene:show( event )
 
 		restart:addEventListener("tap",(function(e) canvas:erase() end))
 	end
+	home = display.newImage("Home_button.png")
+		home:scale(0.4,0.4)
+		home.y = home.y + yInset*2
+		home.x = home.x + xInset*1.5
+
+		function goHome()
+			composer.removeScene("drawself")
+			composer.gotoScene( "scene1" , "fade", 500)
+			home.alpha = 0
+			audio.pause(backgroundMusicChannel)
+			timer.performWithDelay( 1000, (function(e) home.alpha = 0 end))
+			return true
+		end
+		home:addEventListener("tap",goHome)
+		sceneGroup:insert(home)
+		
+		music = display.newImage("Music_off.png")
+		music:scale(0.4,0.4)
+		music.y = display.actualContentHeight - yInset*2
+		music.x = music.x+ xInset*1.5
+		music:addEventListener("tap",toggleMusic)
+		sceneGroup:insert(music)
+		musicO = display.newImage("Music_on.png")
+		musicO:scale(0.4,0.4)
+		musicO.y = display.actualContentHeight - yInset*2
+		musicO.x = musicO.x+ xInset*1.5
+		musicO:addEventListener("tap",toggleMusic)
+		sceneGroup:insert(musicO)
+		isPlaying=true
+		
 end
 
 function ShowPicker()
 	local tpicker = require("colorPicker")
-	local p = tpicker.showPicker(3)
+	local p = tpicker.showPicker(2)
 	
 	home.alpha = 0
 	picker.alpha = 0

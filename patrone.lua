@@ -24,10 +24,8 @@ local sheetInfo = require("animations")
 		local myImageSheet = graphics.newImageSheet( "animations.png", sheetInfo:getSheet() )
 		local cursprite
 
-local shapes = {"circle1.png","circle2.png","circle3.png","circle4.png",
-"circle5.png","circle6.png","diamond.png","hexagon.png",
-"4.png","Parrallelogram.png","square.png","triangle1.png",
-"triangle2.png","triangle3.png","triangle4.png","triangle5.png"}
+local shapes = {"shapes/arrow2.png","shapes/circle.png","shapes/diamond.png","shapes/eye.png","shapes/halfmoon.png","shapes/hexagon.png","shapes/oval.png"
+,"shapes/parellelogram.png","shapes/rectangle.png","shapes/square.png","shapes/triangle.png","shapes/uprightRectangle.png"}
 
 local shapeHeight = display.contentHeight/6
 
@@ -119,13 +117,13 @@ local function NextLv(event)
  speechtext = nil
  					end
 
-					composer.removeScene("rangskik")
-composer.removeScene("thisorthat")
---composer.removeScene("patrone")
-composer.removeScene("hoeveelvorms")
-composer.removeScene("vormwatpas")
+					-- composer.removeScene("rangskik")
+-- composer.removeScene("thisorthat")
+composer.removeScene("patrone")
+-- composer.removeScene("hoeveelvorms")
+-- composer.removeScene("vormwatpas")
 
-composer.gotoScene( levels[n], { effect = "fade", time = 300 } )
+composer.gotoScene( levels[n] )
  
 end
 
@@ -251,27 +249,27 @@ local function move( event )
     return true
 end
 
-local function RemoveStuffies()
-        home:removeSelf()
-        home = nil
+-- local function RemoveStuffies()
+        -- home:removeSelf()
+        -- home = nil
         
-        media.stopSound()
-end
+        -- media.stopSound()
+-- end
 
-local function tohome(event)
-if ( event.phase == "began" ) then
+-- local function tohome(event)
+-- if ( event.phase == "began" ) then
 
-        elseif ( event.phase == "moved" ) then
-            print( "moved phase" )
+        -- elseif ( event.phase == "moved" ) then
+            -- print( "moved phase" )
 
-        elseif ( event.phase == "ended" or event.phase == "cancelled" ) then
-        RemoveStuffies()
-            composer.gotoScene( "scene1", { effect = "fade", time = 300 } )
+        -- elseif ( event.phase == "ended" or event.phase == "cancelled" ) then
+        -- RemoveStuffies()
+            -- composer.gotoScene( "scene1", { effect = "fade", time = 300 } )
             
-        end
+        -- end
 
-    return true
-end
+    -- return true
+-- end
 
 function scene:show( event )
     sceneGroup = self.view
@@ -289,10 +287,11 @@ function scene:show( event )
 
 		function goHome()
 			composer.removeScene("patrone")
-			composer.gotoScene( "scene1" , "fade", 500)
+			composer.gotoScene( "scene1" )
 			home.alpha = 0
 			--audio.resume(backgroundMusicChannel)
-			timer.performWithDelay( 1000, (function(e) home.alpha = 0 end))
+			--timer.performWithDelay( 1000, (function(e) home.alpha = 0 end))
+			return true
 		end
 		home:addEventListener("tap",goHome)
 		sceneGroup:insert(home)
@@ -306,64 +305,81 @@ function scene:show( event )
         -- 
         -- INSERT code here to make the scene come alive
         -- e.g. start timers, begin animation, play audio, etc        
-        local margin = display.contentWidth*0.10
+        local margin = display.contentWidth*0.2
         local position = display.contentWidth*0.2
         
         for i=1,#pattern do
-        top[i] = display.newImage(pattern[i] .. ".png")
+        top[i] = display.newImage(shapes[pattern[i]])
         top[i].alpha = 0
         top[i]:scale(0.16/2,0.16/2)
         top[i].x = margin + position*(i-1)*5/3/2
         top[i].y = display.contentHeight/3-display.contentHeight/6
-        top[i].tag = animals[pattern[i]]
+        top[i].tag = i
         sceneGroup:insert(top[i])
         end    
         
         for i=1,#pattern-1 do
-        bottom[i] = display.newImage(pattern[i] .. ".png")
+        bottom[i] = display.newImage(shapes[pattern[i]])
         
         bottom[i]:scale(0.26*1.5/1.5,0.26*1.5/1.5)
        
 
-        if (i <= 3) then
-        bottom[i].y = display.contentHeight/4+20
-        bottom[i].x = display.contentWidth*(i)/5
+        -- if (i <= 3) then
+        -- bottom[i].y = display.contentHeight/4+20 +yInset
+        -- bottom[i].x = 
 
-        if (i <= 2) then
-            bottom[i].x = bottom[i].x - 5
-        end
+        -- if (i <= 2) then
+            -- bottom[i].x = bottom[i].x 
+        -- end
 
-        if (i == 1) then
-            bottom[i].x = bottom[i].x - 5
-        end
+        -- if (i == 1) then
+            -- bottom[i].x = bottom[i].x 
+        -- end
 
-        else
-         bottom[i].y = display.contentHeight/1.5+10
-         bottom[i].x = display.contentWidth*(i-3)/5-5
+        -- else
+         -- bottom[i].y = display.contentHeight/1.5+yInset
+         -- bottom[i].x = display.contentWidth*(i-3)/5
 
-         if (i == 4) then
-            bottom[i].x = bottom[i].x - 5
-        end
+         -- if (i == 4) then
+            -- bottom[i].x = bottom[i].x 
+        -- end
 
-         end
+         -- end
+		
+		
+		 if(i==1)then
+			bottom[i].y = display.contentHeight/4+20 +yInset
+			bottom[i].x = xInset*3
+		 elseif(i==2)then
+			bottom[i].y = display.contentHeight/4+20 +yInset
+			bottom[i].x = xInset*3 + 110
+		 elseif(i==3)then
+			bottom[i].y = display.contentHeight/4+20 +yInset
+		    bottom[i].x = xInset*3 + 220
+		 elseif(i==4)then
+		 bottom[i].y = display.contentHeight/1.5+yInset
+		 bottom[i].x = xInset*3
+		 else
+		 bottom[i].y = display.contentHeight/1.5+yInset
+		 bottom[i].x = xInset*3 + 110
+		 end
         bottom[i].tag = animals[pattern[i]]
-        
-        
         local myRectangle = display.newRect( bottom[i].x, bottom[i].y, 100, 100)
 		myRectangle.strokeWidth = 1
 		myRectangle:setFillColor( 1 )
 		myRectangle:setStrokeColor( 204/255, 204/255, 204/255 )
-		sceneGroup:insert(myRectangle)
+        sceneGroup:insert(myRectangle)
+        
 		
 		sceneGroup:insert(bottom[i])
 		
         end     
         
         img = display.newImage("q.png")
-        img.x = display.contentWidth*(3)/5
+        img.x = xInset*3 + 220
         img:scale(0.3,0.3)
         --img:setFillColor(0,1,0)
-        img.y = display.contentHeight/1.5+10
+        img.y = display.contentHeight/1.5+yInset
          
         
         local myRectangle = display.newRect( img.x, img.y, 100, 100)
@@ -433,7 +449,9 @@ function scene:show( event )
 					cursprite:play()
 	
 				elseif event.phase == "moved" then
-	
+					if(event.target.markY==nil)then
+						return
+					end
 					local y = (event.y - event.yStart) + event.target.markY
 					local x = (event.x - event.xStart) + event.target.markX
 					
@@ -561,21 +579,21 @@ function scene:destroy( event )
 end
 
 function interpretTag(name)
-	if (name == "circle1.png") then
+	if (name == "shapes/arrow2.png") then
 	return 1
-	elseif (name == "diamond.png") then
+	elseif (name == "shapes/circle.png") then
 	return 2
-	elseif (name == "hexagon.png") then
+	elseif (name == "shapes/diamond.png") then
 	return 3
-	elseif (name == "4.png") then
+	elseif (name == "shapes/eye.png") then
 	return 4
-	elseif (name == "Parrallelogram.png") then
+	elseif (name == "shapes/halfmoon.png") then
 	return 5
-	elseif (name == "square.png") then
+	elseif (name == "shapes/hexagon.png") then
 	return 6
-	elseif (name == "triangle1.png") then
+	elseif (name == "shapes/oval.png") then
 	return 7
-	elseif (name == "triangle2.png") then
+	elseif (name == "shapes/parellelogram.png") then
 	return 8
 	end
 	return name

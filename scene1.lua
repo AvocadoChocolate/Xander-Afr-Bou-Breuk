@@ -192,11 +192,11 @@ sceneGroup:insert(myText)
 				--composer.removeScene("vormwatpas")
         		--composer.gotoScene( "vormwatpas", { effect = "fade", time = 300 } )
         		
-        		-- composer.removeScene("hoeveelvorms")
-        		-- composer.gotoScene( "hoeveelvorms", { effect = "fade", time = 300 } )
+        		composer.removeScene("scene1")
+        		composer.gotoScene( "patrone", { effect = "fade", time = 300 } )
         		audio:pause(backgroundMusicChannelMenu)
-        		composer.removeScene(levels[math.random(#levels)])
-        		composer.gotoScene( levels[math.random(#levels)], { effect = "fade", time = 300 } )
+        		-- composer.removeScene("scene1")
+        		-- composer.gotoScene( levels[math.random(#levels)], { effect = "fade", time = 300 } )
         	end
         	games:addEventListener( "tap", games )
         end

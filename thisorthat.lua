@@ -5,7 +5,7 @@ function scene:create( event )
 	local sceneGroup = self.view
 end
 
-local choose = { "butterfly.png", "car.png", "fishf.png", "frog.png", "snowman.png", "tree.png" }
+local choose = { "butterfly.png", "car.png", "fish.png", "frog.png", "snowman.png", "tree.png" }
 local numb = 1
 local bigsmall = false
 local left = true
@@ -33,13 +33,13 @@ local function NextLv(event)
  					end
  
 
-					composer.removeScene("rangskik")
---composer.removeScene("thisorthat")
-composer.removeScene("patrone")
-composer.removeScene("hoeveelvorms")
-composer.removeScene("vormwatpas")
+					--composer.removeScene("rangskik")
+composer.removeScene("thisorthat")
+-- composer.removeScene("patrone")
+-- composer.removeScene("hoeveelvorms")
+-- composer.removeScene("vormwatpas")
 
-composer.gotoScene( levels[n], { effect = "fade", time = 300 } )
+composer.gotoScene( levels[n] )
  
 end
 
@@ -179,10 +179,11 @@ function scene:show( event )
 
 		function goHome()
 			composer.removeScene("thisorthat")
-			composer.gotoScene( "scene1" , "fade", 500)
+			composer.gotoScene( "scene1" )
 			home.alpha = 0
 			--audio.resume(backgroundMusicChannel)
-			timer.performWithDelay( 1000, (function(e) home.alpha = 0 end))
+			--timer.performWithDelay( 1000, (function(e) home.alpha = 0 end))
+			return true
 		end
 		home:addEventListener("tap",goHome)
 		sceneGroup:insert(home)
@@ -192,21 +193,17 @@ function scene:show( event )
 			img1 = display.newImage(choose[numb])
 			img1:scale(display.actualContentWidth/3/img1.contentWidth,display.actualContentWidth/3/img1.contentWidth)
 
-			if string.sub(system.getInfo("model"),1,4) == "iPad" then
-				img1.x = display.actualContentWidth/4
-			else
-				img1.x = display.actualContentWidth/4 - img1.contentWidth/4
-			end
+			
+				img1.x = xInset*4
+			
 			img1.y = display.contentHeight/2
 			sceneGroup:insert(img1)
 			
 			img2 = display.newImage(choose[numb])
 			img2:scale(display.actualContentWidth/3/img2.contentWidth/2,display.actualContentWidth/3/img2.contentWidth/2)
-			if string.sub(system.getInfo("model"),1,4) == "iPad" then
-				img2.x = display.actualContentWidth*3/4 
-			else
-			img2.x = display.actualContentWidth*3/4 - img2.contentWidth/2
-			end
+			
+			img2.x = display.actualContentWidth - xInset*4
+			
 			img2.y = display.contentHeight/2
 			sceneGroup:insert(img2)
 		else
